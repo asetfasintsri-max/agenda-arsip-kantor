@@ -21,6 +21,8 @@ import {
   KlasifikasiKeamanan, 
   SuratMasuk 
 } from '../types';
+import { DocumentAiScanUploader } from './DocumentAiScanUploader';
+import { AnalyzedDocumentData } from '../services/documentAnalysis';
 
 interface SuratMasukEditModalProps {
   isOpen: boolean;
@@ -52,6 +54,10 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
   const [kategoriUrusan, setKategoriUrusan] = useState<KategoriUrusan>('renbut');
   const [statusDisposisi, setStatusDisposisi] = useState<SuratMasuk['statusDisposisi']>('Proses Koordinasi Paban IV');
   const [satkerTujuan, setSatkerTujuan] = useState('Paban IV Konst / Minlog');
+
+  // AI OCR Scan & Missing Fields states
+  const [scanFileName, setScanFileName] = useState<string | undefined>(initialData?.scanFileName);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   useEffect(() => {
     if (initialData) {
@@ -86,6 +92,20 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
     }
   }, [initialData, isOpen, totalExisting]);
 
+  const handleExtractedFromAi = (data: AnalyzedDocumentData, file: File) => {
+    if (data.noSurat) setNoSurat(data.noSurat);
+    if (data.tglSurat) setTglSurat(data.tglSurat);
+    if (data.tglTerimaAtauKirim) setTglTerima(data.tglTerimaAtauKirim);
+    if (data.asalPengirim) setAsalSurat(data.asalPengirim);
+    if (data.perihal) setPerihal(data.perihal);
+    if (data.ringkasan) setRingkasan(data.ringkasan);
+    if (data.klasifikasi) setKlasifikasi(data.klasifikasi as any);
+    if (data.derajat) setDerajat(data.derajat as any);
+    if (data.satkerTujuan) setSatkerTujuan(data.satkerTujuan);
+    setScanFileName(file.name);
+    setMissingFields(data.missingFields || []);
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -118,6 +138,7 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
       statusDisposisi,
       kategoriUrusan,
       satkerTujuan,
+      scanFileName: scanFileName || initialData?.scanFileName,
       tglDibuat: initialData?.tglDibuat || new Date().toISOString()
     };
 
@@ -136,10 +157,10 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
             </div>
             <div>
               <h3 className="font-heading font-bold text-sm">
-                {isEdit ? 'Ubah / Edit Agenda Surat Masuk' : 'Tambah Manual Agenda Surat Masuk'}
+                {isEdit ? 'Ubah / Edit Agenda Surat Masuk' : 'Tambah Agenda Surat Masuk'}
               </h3>
               <p className="text-[11px] text-[#adc8f5]">
-                {isEdit ? `ID: ${initialData?.id} • Nomor: ${initialData?.noSurat}` : 'Registrasi berkas naskah masuk ke sistem SIMONAS'}
+                {isEdit ? `ID: ${initialData?.id} • Nomor: ${initialData?.noSurat}` : 'Registrasi naskah masuk via input manual atau pemindai cerdas PDF/Foto'}
               </p>
             </div>
           </div>
@@ -154,6 +175,12 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
 
         {/* Modal Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
+          {/* AI OCR SCANNER DROPZONE */}
+          <DocumentAiScanUploader
+            documentType="surat_masuk"
+            onExtracted={handleExtractedFromAi}
+          />
+
           {/* Row 1: No Agenda & No Surat */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -169,15 +196,26 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
               />
             </div>
             <div>
-              <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-                No. Surat Dinas *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                  No. Surat Dinas *
+                </label>
+                {(!noSurat.trim() || missingFields.includes('noSurat')) && (
+                  <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                    Opsi Isi Manual
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={noSurat}
                 onChange={(e) => setNoSurat(e.target.value)}
                 placeholder="Contoh: B/1429/II/2025/LOG"
-                className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-mono font-bold text-[#131b2e] focus:ring-1 focus:ring-[#0f1e36]"
+                className={`w-full px-3 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                  (!noSurat.trim() && missingFields.length > 0)
+                    ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                    : 'border-[#dae2fd] bg-white text-[#131b2e]'
+                }`}
                 required
               />
             </div>
@@ -226,15 +264,26 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
           {/* Row 3: Asal Pengirim & Satker Tujuan */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-                Asal Pengirim / Instansi *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                  Asal Pengirim / Instansi *
+                </label>
+                {(!asalSurat.trim() || missingFields.includes('asalPengirim')) && (
+                  <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                    Opsi Isi Manual
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={asalSurat}
                 onChange={(e) => setAsalSurat(e.target.value)}
                 placeholder="Contoh: Mabes TNI / Slog TNI"
-                className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-semibold"
+                className={`w-full px-3 py-1.5 rounded-lg border text-xs font-semibold ${
+                  (!asalSurat.trim() && missingFields.length > 0)
+                    ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                    : 'border-[#dae2fd] bg-white text-[#131b2e]'
+                }`}
                 required
               />
             </div>
@@ -253,30 +302,52 @@ export const SuratMasukEditModal: React.FC<SuratMasukEditModalProps> = ({
 
           {/* Row 4: Perihal Dokumen */}
           <div>
-            <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-              Perihal Dokumen Resmi *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                Perihal Dokumen Resmi *
+              </label>
+              {(!perihal.trim() || missingFields.includes('perihal')) && (
+                <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                  Opsi Isi Manual
+                </span>
+              )}
+            </div>
             <input
               type="text"
               value={perihal}
               onChange={(e) => setPerihal(e.target.value)}
               placeholder="Perihal surat kedinasan..."
-              className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-medium"
+              className={`w-full px-3 py-1.5 rounded-lg border text-xs font-medium ${
+                (!perihal.trim() && missingFields.length > 0)
+                  ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                  : 'border-[#dae2fd] bg-white text-[#131b2e]'
+              }`}
               required
             />
           </div>
 
           {/* Row 5: Ringkasan Naskah */}
           <div>
-            <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-              Ringkasan Isi / Ekstraksi
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                Ringkasan Isi / Ekstraksi
+              </label>
+              {(!ringkasan.trim() || missingFields.includes('ringkasan')) && (
+                <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                  Opsi Isi Manual
+                </span>
+              )}
+            </div>
             <textarea
               rows={2}
               value={ringkasan}
               onChange={(e) => setRingkasan(e.target.value)}
               placeholder="Catatan ringkas isi pokok surat..."
-              className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs leading-relaxed"
+              className={`w-full px-3 py-1.5 rounded-lg border text-xs leading-relaxed ${
+                (!ringkasan.trim() && missingFields.length > 0)
+                  ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                  : 'border-[#dae2fd] bg-white text-[#131b2e]'
+              }`}
             />
           </div>
 

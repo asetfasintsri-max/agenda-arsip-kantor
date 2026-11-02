@@ -14,6 +14,8 @@ import {
   Send
 } from 'lucide-react';
 import { WartaTelegram } from '../types';
+import { DocumentAiScanUploader } from './DocumentAiScanUploader';
+import { AnalyzedDocumentData } from '../services/documentAnalysis';
 
 interface TelegramModalProps {
   isOpen: boolean;
@@ -43,6 +45,25 @@ export const TelegramModal: React.FC<TelegramModalProps> = ({
   const [perihal, setPerihal] = useState('');
   const [isiBerita, setIsiBerita] = useState('');
   const [status, setStatus] = useState<WartaTelegram['status']>('Diterima');
+
+  // AI OCR Scan & Missing Fields states
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  const handleExtractedFromAi = (data: AnalyzedDocumentData) => {
+    if (data.tipeTelegram) setTipe(data.tipeTelegram);
+    if (data.noTelegram || data.noSurat) setNoTelegram(data.noTelegram || data.noSurat);
+    if (data.tglSurat || data.tglTerimaAtauKirim) {
+      setTglWaktu(`${data.tglSurat || data.tglTerimaAtauKirim} 08:00 WIB`);
+    }
+    if (data.asalPengirim) setDari(data.asalPengirim);
+    if (data.tujuanPenerima) setKepada(data.tujuanPenerima);
+    if (data.tembusan) setTembusan(data.tembusan);
+    if (data.perihal) setPerihal(data.perihal);
+    if (data.isiBerita || data.ringkasan) setIsiBerita(data.isiBerita || data.ringkasan);
+    if (data.klasifikasi) setKlasifikasi((data.klasifikasi.toUpperCase() as any) || 'KILAT');
+    if (data.derajat) setDerajatKeamanan((data.derajat.toUpperCase() as any) || 'RAHASIA');
+    setMissingFields(data.missingFields || []);
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -131,6 +152,14 @@ export const TelegramModal: React.FC<TelegramModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1 font-sans">
+          {/* AI OCR SCANNER FOR TELEGRAM PDF & PHOTO */}
+          <DocumentAiScanUploader
+            documentType="telegram"
+            title="Ekstraksi Warta Telegram dari Berkas PDF / Foto"
+            description="Unggah scan warta telegram resmi (PDF atau Foto). AI akan membaca nomor TR, asal pengirim, tujuan, derajat, dan isi berita otomatis. Data yang belum lengkap dapat diisi manual."
+            onExtracted={handleExtractedFromAi}
+          />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
@@ -159,15 +188,26 @@ export const TelegramModal: React.FC<TelegramModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-                Nomor Telegram *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                  Nomor Telegram *
+                </label>
+                {(!noTelegram.trim() || missingFields.includes('noTelegram') || missingFields.includes('noSurat')) && (
+                  <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                    Opsi Isi Manual
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={noTelegram}
                 onChange={(e) => setNoTelegram(e.target.value)}
                 placeholder="Contoh: TR/42/2025"
-                className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-mono font-bold text-[#131b2e] focus:ring-1 focus:ring-[#0f1e36]"
+                className={`w-full px-3 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                  (!noTelegram.trim() && missingFields.length > 0)
+                    ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                    : 'border-[#dae2fd] bg-white text-[#131b2e]'
+                }`}
                 required
               />
             </div>
@@ -175,26 +215,48 @@ export const TelegramModal: React.FC<TelegramModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-                Dari (Pengirim)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                  Dari (Pengirim) *
+                </label>
+                {(!dari.trim() || missingFields.includes('asalPengirim')) && (
+                  <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                    Opsi Isi Manual
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={dari}
                 onChange={(e) => setDari(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-semibold uppercase"
+                className={`w-full px-3 py-1.5 rounded-lg border text-xs font-semibold uppercase ${
+                  (!dari.trim() && missingFields.length > 0)
+                    ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                    : 'border-[#dae2fd] bg-white text-[#131b2e]'
+                }`}
                 required
               />
             </div>
             <div>
-              <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-                Kepada (Tujuan)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                  Kepada (Tujuan) *
+                </label>
+                {(!kepada.trim() || missingFields.includes('tujuanPenerima')) && (
+                  <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                    Opsi Isi Manual
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={kepada}
                 onChange={(e) => setKepada(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-semibold uppercase"
+                className={`w-full px-3 py-1.5 rounded-lg border text-xs font-semibold uppercase ${
+                  (!kepada.trim() && missingFields.length > 0)
+                    ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                    : 'border-[#dae2fd] bg-white text-[#131b2e]'
+                }`}
                 required
               />
             </div>
@@ -259,29 +321,51 @@ export const TelegramModal: React.FC<TelegramModalProps> = ({
           </div>
 
           <div>
-            <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-              Perihal Warta *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                Perihal Warta *
+              </label>
+              {(!perihal.trim() || missingFields.includes('perihal')) && (
+                <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                  Opsi Isi Manual
+                </span>
+              )}
+            </div>
             <input
               type="text"
               value={perihal}
               onChange={(e) => setPerihal(e.target.value)}
               placeholder="Perihal warta telegram..."
-              className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-semibold"
+              className={`w-full px-3 py-1.5 rounded-lg border text-xs font-semibold ${
+                (!perihal.trim() && missingFields.length > 0)
+                  ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                  : 'border-[#dae2fd] bg-white text-[#131b2e]'
+              }`}
               required
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-              Isi Berita Telegram (Format Militer) *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                Isi Berita Telegram (Format Militer) *
+              </label>
+              {(!isiBerita.trim() || missingFields.includes('isiBerita') || missingFields.includes('ringkasan')) && (
+                <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                  Opsi Isi Manual
+                </span>
+              )}
+            </div>
             <textarea
               rows={4}
               value={isiBerita}
               onChange={(e) => setIsiBerita(e.target.value)}
               placeholder="AAA TTK RENCANA PERGESERAN LOGISTIK TTK BBB ..."
-              className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-mono leading-relaxed"
+              className={`w-full px-3 py-1.5 rounded-lg border text-xs font-mono leading-relaxed ${
+                (!isiBerita.trim() && missingFields.length > 0)
+                  ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                  : 'border-[#dae2fd] bg-white text-[#131b2e]'
+              }`}
               required
             />
           </div>

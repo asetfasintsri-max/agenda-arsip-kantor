@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   X, 
   ZoomIn, 
@@ -27,11 +27,13 @@ import {
   FileCheck2,
   FileUp,
   Download,
-  QrCode
+  QrCode,
+  Image as ImageIcon
 } from 'lucide-react';
 import { KLAUSUL_RESMI_19, LampiranItem, SuratMasuk } from '../types';
 import { DisposisiQrSection } from './DisposisiQrSection';
 import { exportDisposisiToPdf } from '../utils/exportDisposisiPdf';
+import { analyzeDocumentFile, AnalyzedDocumentData } from '../services/documentAnalysis';
 
 interface OcrProcessingModalHubProps {
   isOpen: boolean;
@@ -58,6 +60,14 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
   const [viewMode, setViewMode] = useState<'ocr' | 'print' | 'split'>(initialViewMode);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [rotation, setRotation] = useState<number>(0);
+
+  // Real Uploaded File & AI Vision state
+  const [uploadedRealFile, setUploadedRealFile] = useState<File | null>(null);
+  const [uploadedRealPreviewUrl, setUploadedRealPreviewUrl] = useState<string | null>(null);
+  const [isAiScanning, setIsAiScanning] = useState<boolean>(false);
+  const [ocrScanAccuracy, setOcrScanAccuracy] = useState<number>(initialSurat?.ocrAccuracy || 98.4);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+  const realFileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
   const [noAgenda, setNoAgenda] = useState<string>(initialSurat?.noAgenda || 'AG-SM/2025/00144');
@@ -162,6 +172,39 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
     );
   };
 
+  const handleRealFileScan = async (file: File) => {
+    setUploadedRealFile(file);
+    if (uploadedRealPreviewUrl) {
+      URL.revokeObjectURL(uploadedRealPreviewUrl);
+    }
+    const preview = URL.createObjectURL(file);
+    setUploadedRealPreviewUrl(preview);
+    setIsAiScanning(true);
+
+    try {
+      const res = await analyzeDocumentFile(file, 'surat_masuk');
+      if (res && res.data) {
+        const d = res.data;
+        if (d.noSurat) setNoSurat(d.noSurat);
+        if (d.tglSurat) setTglSurat(d.tglSurat);
+        if (d.tglTerimaAtauKirim) setTglTerima(d.tglTerimaAtauKirim);
+        if (d.asalPengirim) setAsalSurat(d.asalPengirim);
+        if (d.perihal) setPerihal(d.perihal);
+        if (d.ringkasan) setRingkasan(d.ringkasan);
+        if (d.klasifikasi) setKlasifikasi(d.klasifikasi);
+        if (d.confidence) setOcrScanAccuracy(d.confidence);
+        setMissingFields(d.missingFields || []);
+        if (d.catatanDisposisi) {
+          setDisposisiPanglima((prev) => ({ ...prev, catatan: d.catatanDisposisi || prev.catatan }));
+        }
+      }
+    } catch (err) {
+      console.error('Scan error in modal hub:', err);
+    } finally {
+      setIsAiScanning(false);
+    }
+  };
+
   const handleSave = () => {
     const newRecord: SuratMasuk = {
       id: initialSurat?.id || `sm-${Date.now()}`,
@@ -186,8 +229,8 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
       statusDisposisi: disposisiWaaslog.perluVerifikasi ? 'Proses Koordinasi Paban IV' : 'Selesai / Terarsip',
       kategoriUrusan: selectedUrusan.includes('Listrik') ? 'legal_utilitas' : 'renbut',
       satkerTujuan: 'Paban IV Konst / Minlog',
-      scanFileName: 'SCAN_B1429_SLOG_TNI.PDF',
-      ocrAccuracy: 98.4,
+      scanFileName: uploadedRealFile?.name || initialSurat?.scanFileName || 'SCAN_B1429_SLOG_TNI.PDF',
+      ocrAccuracy: ocrScanAccuracy,
       shaHash: 'e8b9ca42...f4a18902',
       tglDibuat: new Date().toISOString()
     };
@@ -423,142 +466,204 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
                     >
                       <RotateCw className="w-3.5 h-3.5" />
                     </button>
+                    <input
+                      type="file"
+                      ref={realFileInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleRealFileScan(file);
+                      }}
+                      accept=".pdf,.jpg,.jpeg,.png,.webp"
+                      className="hidden"
+                    />
                     <button
-                      onClick={() => alert('Fitur Pemindaian: Silakan pilih file PDF atau foto dokumen dinas Anda.')}
+                      onClick={() => realFileInputRef.current?.click()}
                       type="button"
-                      className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium flex items-center gap-1"
+                      disabled={isAiScanning}
+                      className="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+                      title="Unggah berkas PDF atau Foto dokumen dinas untuk dipindai otomatis oleh AI"
                     >
-                      <Upload className="w-3 h-3" />
-                      <span>Ganti File</span>
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{uploadedRealFile ? 'Ganti File' : 'Unggah PDF / Foto'}</span>
                     </button>
                   </div>
                 </div>
 
-                {/* SIMULASI LEMBAR FISIK DOKUMEN MILITER */}
-                <div className="flex-1 my-3 bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex items-center justify-center overflow-auto relative">
-                  <div
-                    style={{
-                      transform: `scale(${zoomLevel / 100}) rotate(${rotation}deg)`,
-                      transformOrigin: 'top center',
-                      transition: 'transform 0.2s ease-out'
-                    }}
-                    className="w-full max-w-[500px] bg-[#fbfbf9] text-slate-900 rounded-xs shadow-2xl p-6 font-serif text-[11px] leading-tight border border-slate-300 relative select-text"
-                  >
-                    {/* Bounding Box Hijau: KOP RESMI */}
-                    <div className="relative border-2 border-emerald-500 bg-emerald-500/5 p-2 rounded-xs mb-3 text-center font-sans">
-                      <span className="absolute -top-2.5 -right-1 px-1.5 py-0.2 bg-emerald-600 text-white font-bold text-[8px] rounded uppercase tracking-wider">
-                        OCR PASTI 100%
-                      </span>
-                      <p className="font-bold text-[12px] uppercase tracking-wider text-slate-900">
-                        MARKAS BESAR TENTARA NASIONAL INDONESIA
+                {/* AREA TAMPILAN BERKAS / SCAN DOKUMEN MILITER */}
+                <div className="flex-1 my-3 bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex items-center justify-center overflow-auto relative min-h-[460px]">
+                  {/* AI Scanning Active Overlay */}
+                  {isAiScanning && (
+                    <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-xs z-30 flex flex-col items-center justify-center p-6 text-center">
+                      <div className="w-12 h-12 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                      <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm mb-1">
+                        <Sparkles className="w-4 h-4 animate-pulse" />
+                        <span>Menganalisa Berkas PDF/Foto via AI Gemini Vision...</span>
+                      </div>
+                      <p className="text-xs text-slate-300 max-w-md">
+                        Mengekstraksi nomor surat, tanggal, asal pengirim, perihal, ringkasan, dan catatan disposisi secara otomatis.
                       </p>
-                      <p className="font-semibold text-[11px] text-slate-800">STAF LOGISTIK</p>
-                      <p className="text-[9px] text-slate-600 italic">Jalan Raya Hankam, Cilangkap, Jakarta Timur 13870</p>
                     </div>
+                  )}
 
-                    {/* Official Rubber Stamp */}
-                    <div className="absolute top-20 right-7 pointer-events-none opacity-85 rotate-[-12deg] z-10">
-                      <div className="w-20 h-20 rounded-full border-2 border-dashed border-red-600 p-0.5 flex flex-col items-center justify-center text-center text-red-700 font-sans font-black text-[7.5px] leading-tight">
-                        <span>* MABES TNI *</span>
-                        <span className="text-[9px] uppercase border-y border-red-500 py-0.5 my-0.5 tracking-wider font-extrabold">
-                          TERCATAT
-                        </span>
-                        <span>SLOG TNI</span>
-                      </div>
-                    </div>
-
-                    {/* Classification stamp */}
-                    <div className="flex items-center justify-between mb-3 font-sans">
-                      <div className="inline-flex items-center gap-1 border-2 border-red-600 px-2 py-0.5 text-red-700 font-black text-[10.5px] tracking-widest uppercase rotate-[-2deg] bg-red-50/50">
-                        ⚡ KILAT / RAHASIA
-                      </div>
-                      <div className="text-right text-[9px] text-slate-500 font-mono">
-                        Lembar 1 dari 2
-                      </div>
-                    </div>
-
-                    {/* Bounding Box Hijau: Metadata */}
-                    <div className="relative border-2 border-emerald-500 bg-emerald-500/5 p-2 rounded-xs mb-3 font-sans text-[11px] space-y-1">
-                      <span className="absolute -top-2.5 right-1 px-1.5 py-0.2 bg-emerald-600 text-white font-bold text-[8px] rounded uppercase tracking-wider">
-                        NOMOR &amp; TGL: 99.8%
-                      </span>
-                      <div className="grid grid-cols-12 gap-1">
-                        <span className="col-span-3 font-semibold text-slate-700">Nomor</span>
-                        <span className="col-span-9 font-mono font-bold text-slate-900">: {noSurat}</span>
-                      </div>
-                      <div className="grid grid-cols-12 gap-1">
-                        <span className="col-span-3 font-semibold text-slate-700">Klasifikasi</span>
-                        <span className="col-span-9 font-bold text-red-700">: Kilat / Rahasia</span>
-                      </div>
-                      <div className="grid grid-cols-12 gap-1">
-                        <span className="col-span-3 font-semibold text-slate-700">Lampiran</span>
-                        <span className="col-span-9">: 1 (satu) Berkas Rincian Matlog</span>
-                      </div>
-                      <div className="grid grid-cols-12 gap-1">
-                        <span className="col-span-3 font-semibold text-slate-700">Perihal</span>
-                        <span className="col-span-9 font-semibold text-slate-900 leading-snug">
-                          : {perihal}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Body text */}
-                    <div className="font-sans text-[10.5px] text-slate-700 leading-relaxed space-y-1.5 mb-3 border-b border-slate-200 pb-2">
-                      <p>Kepada Yth. <strong>Panglima Komando Logistik</strong></p>
-                      <p className="indent-4">1. Dasar Keputusan Panglima TNI Nomor Kep/104/I/2025 perihal Rencana Pengamanan Daerah Operasi Khusus.</p>
-                      <p className="indent-4">2. Sehubungan dasar di atas, mohon kesiapan alokasi dan pergeseran munisi kaliber 7.62mm &amp; 5.56mm link untuk satgas perbatasan transit Biak sebelum H-3 pergeseran materiel.</p>
-                    </div>
-
-                    {/* Bounding Box Kuning/Oranye: Disposisi Coretan Tinta Biru Basah */}
-                    <div className="relative border-2 border-amber-500 bg-amber-500/10 p-2.5 rounded-xs animate-pulse-subtle">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-sans font-black text-[9px] rounded uppercase tracking-wider flex items-center gap-1 shadow">
-                          <AlertTriangle className="w-3 h-3 text-slate-950" />
-                          Perlu Pemeriksaan Manual: Tulisan tangan disposisi &amp; paraf
-                        </span>
-                        <button
-                          onClick={() => onOpenForensic(currentConstructedSurat)}
-                          type="button"
-                          className="px-2 py-0.5 rounded bg-blue-700 hover:bg-blue-800 text-white font-sans text-[10px] font-bold shadow-xs flex items-center gap-1"
-                          title="Buka Alat Pembesar & Koreksi Lensa Forensik"
-                        >
-                          <Microscope className="w-3 h-3 text-white" />
-                          <span>Buka Lensa Forensik</span>
-                        </button>
-                      </div>
-
-                      <div className="font-mono text-[10px] text-slate-900 bg-white/80 p-2 rounded border border-amber-300 space-y-1">
-                        <div className="flex items-center justify-between text-[9px] font-sans font-bold text-amber-900 border-b border-amber-200 pb-0.5">
-                          <span>Coretan Disposisi Tinta Biru Basah</span>
-                          <span className="text-amber-800">Keyakinan AI: 84.2%</span>
+                  {uploadedRealPreviewUrl ? (
+                    uploadedRealFile?.type === 'application/pdf' || uploadedRealFile?.name.toLowerCase().endsWith('.pdf') ? (
+                      <div className="w-full h-full min-h-[500px] rounded-lg overflow-hidden bg-slate-900 border border-slate-700 flex flex-col">
+                        <div className="bg-slate-800 px-3 py-1.5 border-b border-slate-700 flex items-center justify-between text-xs text-slate-300">
+                          <span className="font-mono flex items-center gap-1.5 truncate max-w-xs">
+                            <FileText className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                            {uploadedRealFile?.name}
+                          </span>
+                          <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700">
+                            Pratinjau PDF Asli
+                          </span>
                         </div>
-                        <p className="italic font-serif text-[11px] text-blue-900">
-                          ✍️ <strong>Panglima:</strong> "Aksi/TDL, Laporkan! Selesaikan sebelum 5 Maret 2025." [Paraf basah]
+                        <iframe
+                          src={uploadedRealPreviewUrl}
+                          title="Pratinjau PDF Asli"
+                          className="w-full flex-1 border-0 bg-white"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center p-2 overflow-auto">
+                        <img
+                          src={uploadedRealPreviewUrl}
+                          alt="Pratinjau Foto Dokumen Asli"
+                          style={{
+                            transform: `scale(${zoomLevel / 100}) rotate(${rotation}deg)`,
+                            transformOrigin: 'center center',
+                            transition: 'transform 0.2s ease-out'
+                          }}
+                          className="max-w-full max-h-[520px] object-contain rounded-lg shadow-2xl border border-slate-700"
+                        />
+                      </div>
+                    )
+                  ) : (
+                    <div
+                      style={{
+                        transform: `scale(${zoomLevel / 100}) rotate(${rotation}deg)`,
+                        transformOrigin: 'top center',
+                        transition: 'transform 0.2s ease-out'
+                      }}
+                      className="w-full max-w-[500px] bg-[#fbfbf9] text-slate-900 rounded-xs shadow-2xl p-6 font-serif text-[11px] leading-tight border border-slate-300 relative select-text"
+                    >
+                      {/* Bounding Box Hijau: KOP RESMI */}
+                      <div className="relative border-2 border-emerald-500 bg-emerald-500/5 p-2 rounded-xs mb-3 text-center font-sans">
+                        <span className="absolute -top-2.5 -right-1 px-1.5 py-0.2 bg-emerald-600 text-white font-bold text-[8px] rounded uppercase tracking-wider">
+                          OCR PASTI 100%
+                        </span>
+                        <p className="font-bold text-[12px] uppercase tracking-wider text-slate-900">
+                          MARKAS BESAR TENTARA NASIONAL INDONESIA
                         </p>
-                        <p className="italic font-serif text-[11px] text-blue-900">
-                          ✍️ <strong>Aslog:</strong> "ssi disposisi pang tni, Paban IV koordinasikan dgn Bekpal." [Paraf]
-                        </p>
-                        <p className="italic font-serif text-[10.5px] text-blue-950 font-semibold bg-amber-100/60 p-1 rounded">
-                          ✍️ <strong>Waaslog (Ambiguitas):</strong> "kord. dg Paban IV ttg alokasi..." [Paraf memotong teks]
-                        </p>
+                        <p className="font-semibold text-[11px] text-slate-800">STAF LOGISTIK</p>
+                        <p className="text-[9px] text-slate-600 italic">Jalan Raya Hankam, Cilangkap, Jakarta Timur 13870</p>
+                      </div>
+
+                      {/* Official Rubber Stamp */}
+                      <div className="absolute top-20 right-7 pointer-events-none opacity-85 rotate-[-12deg] z-10">
+                        <div className="w-20 h-20 rounded-full border-2 border-dashed border-red-600 p-0.5 flex flex-col items-center justify-center text-center text-red-700 font-sans font-black text-[7.5px] leading-tight">
+                          <span>* MABES TNI *</span>
+                          <span className="text-[9px] uppercase border-y border-red-500 py-0.5 my-0.5 tracking-wider font-extrabold">
+                            TERCATAT
+                          </span>
+                          <span>SLOG TNI</span>
+                        </div>
+                      </div>
+
+                      {/* Classification stamp */}
+                      <div className="flex items-center justify-between mb-3 font-sans">
+                        <div className="inline-flex items-center gap-1 border-2 border-red-600 px-2 py-0.5 text-red-700 font-black text-[10.5px] tracking-widest uppercase rotate-[-2deg] bg-red-50/50">
+                          ⚡ KILAT / RAHASIA
+                        </div>
+                        <div className="text-right text-[9px] text-slate-500 font-mono">
+                          Lembar 1 dari 2
+                        </div>
+                      </div>
+
+                      {/* Bounding Box Hijau: Metadata */}
+                      <div className="relative border-2 border-emerald-500 bg-emerald-500/5 p-2 rounded-xs mb-3 font-sans text-[11px] space-y-1">
+                        <span className="absolute -top-2.5 right-1 px-1.5 py-0.2 bg-emerald-600 text-white font-bold text-[8px] rounded uppercase tracking-wider">
+                          NOMOR &amp; TGL: 99.8%
+                        </span>
+                        <div className="grid grid-cols-12 gap-1">
+                          <span className="col-span-3 font-semibold text-slate-700">Nomor</span>
+                          <span className="col-span-9 font-mono font-bold text-slate-900">: {noSurat}</span>
+                        </div>
+                        <div className="grid grid-cols-12 gap-1">
+                          <span className="col-span-3 font-semibold text-slate-700">Klasifikasi</span>
+                          <span className="col-span-9 font-bold text-red-700">: Kilat / Rahasia</span>
+                        </div>
+                        <div className="grid grid-cols-12 gap-1">
+                          <span className="col-span-3 font-semibold text-slate-700">Lampiran</span>
+                          <span className="col-span-9">: 1 (satu) Berkas Rincian Matlog</span>
+                        </div>
+                        <div className="grid grid-cols-12 gap-1">
+                          <span className="col-span-3 font-semibold text-slate-700">Perihal</span>
+                          <span className="col-span-9 font-semibold text-slate-900 leading-snug">
+                            : {perihal}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Body text */}
+                      <div className="font-sans text-[10.5px] text-slate-700 leading-relaxed space-y-1.5 mb-3 border-b border-slate-200 pb-2">
+                        <p>Kepada Yth. <strong>Panglima Komando Logistik</strong></p>
+                        <p className="indent-4">1. Dasar Keputusan Panglima TNI Nomor Kep/104/I/2025 perihal Rencana Pengamanan Daerah Operasi Khusus.</p>
+                        <p className="indent-4">2. Sehubungan dasar di atas, mohon kesiapan alokasi dan pergeseran munisi kaliber 7.62mm &amp; 5.56mm link untuk satgas perbatasan transit Biak sebelum H-3 pergeseran materiel.</p>
+                      </div>
+
+                      {/* Bounding Box Kuning/Oranye: Disposisi Coretan Tinta Biru Basah */}
+                      <div className="relative border-2 border-amber-500 bg-amber-500/10 p-2.5 rounded-xs animate-pulse-subtle">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-sans font-black text-[9px] rounded uppercase tracking-wider flex items-center gap-1 shadow">
+                            <AlertTriangle className="w-3 h-3 text-slate-950" />
+                            Perlu Pemeriksaan Manual: Tulisan tangan disposisi &amp; paraf
+                          </span>
+                          <button
+                            onClick={() => onOpenForensic(currentConstructedSurat)}
+                            type="button"
+                            className="px-2 py-0.5 rounded bg-blue-700 hover:bg-blue-800 text-white font-sans text-[10px] font-bold shadow-xs flex items-center gap-1"
+                            title="Buka Alat Pembesar & Koreksi Lensa Forensik"
+                          >
+                            <Microscope className="w-3 h-3 text-white" />
+                            <span>Buka Lensa Forensik</span>
+                          </button>
+                        </div>
+
+                        <div className="font-mono text-[10px] text-slate-900 bg-white/80 p-2 rounded border border-amber-300 space-y-1">
+                          <div className="flex items-center justify-between text-[9px] font-sans font-bold text-amber-900 border-b border-amber-200 pb-0.5">
+                            <span>Coretan Disposisi Tinta Biru Basah</span>
+                            <span className="text-amber-800">Keyakinan AI: 84.2%</span>
+                          </div>
+                          <p className="italic font-serif text-[11px] text-blue-900">
+                            ✍️ <strong>Panglima:</strong> "Aksi/TDL, Laporkan! Selesaikan sebelum 5 Maret 2025." [Paraf basah]
+                          </p>
+                          <p className="italic font-serif text-[11px] text-blue-900">
+                            ✍️ <strong>Aslog:</strong> "ssi disposisi pang tni, Paban IV koordinasikan dgn Bekpal." [Paraf]
+                          </p>
+                          <p className="italic font-serif text-[10.5px] text-blue-950 font-semibold bg-amber-100/60 p-1 rounded">
+                            ✍️ <strong>Waaslog (Ambiguitas):</strong> "kord. dg Paban IV ttg alokasi..." [Paraf memotong teks]
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Bottom Receipt stamp */}
+                      <div className="mt-3 pt-1 flex items-center justify-between text-[9px] text-slate-600 font-sans">
+                        <span>Diterima Sentral Posko Minlog: {tglTerima} / {waktuTerima}</span>
+                        <span className="font-mono text-emerald-800 font-bold">SHA-256: e8b9...f4a1</span>
                       </div>
                     </div>
-
-                    {/* Bottom Receipt stamp */}
-                    <div className="mt-3 pt-1 flex items-center justify-between text-[9px] text-slate-600 font-sans">
-                      <span>Diterima Sentral Posko Minlog: {tglTerima} / {waktuTerima}</span>
-                      <span className="font-mono text-emerald-800 font-bold">SHA-256: e8b9...f4a1</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Footer Preview Scan Info */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-700 text-xs text-slate-400 shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>Berkas: <code className="font-mono text-slate-200">SCAN_B1429_SLOG_TNI.PDF</code> (2.4 MB)</span>
+                    <span>
+                      Berkas: <code className="font-mono text-slate-200">{uploadedRealFile ? uploadedRealFile.name : 'SCAN_B1429_SLOG_TNI.PDF'}</code> ({uploadedRealFile ? (uploadedRealFile.size / 1024 / 1024).toFixed(1) + ' MB' : '2.4 MB'})
+                    </span>
                   </div>
-                  <span>Resolusi: <strong>400 DPI Kualitas Arsip</strong></span>
+                  <span>Resolusi: <strong>{uploadedRealFile ? 'Berkas Unggahan Riil' : '400 DPI Kualitas Arsip'}</strong></span>
                 </div>
               </div>
 
@@ -585,6 +690,21 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
                     </span>
                   </div>
 
+                  {/* Missing Fields / Opsi Pengisian Manual Alert */}
+                  {missingFields.length > 0 && (
+                    <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-xs flex items-start gap-2.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold text-amber-950">
+                          Opsi Pengisian Manual Aktif: {missingFields.length} bidang belum terisi / belum terbaca
+                        </p>
+                        <p className="text-[11px] text-amber-800 mt-0.5">
+                          AI tidak mendeteksi data berikut dari dokumen: <strong>{missingFields.join(', ')}</strong>. Silakan ketik langsung pada formulir bertanda oranye di bawah.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Row 1: No Agenda & No Surat */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -603,9 +723,15 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
                         <label className="text-[11px] uppercase tracking-wider text-[#44474d] font-bold block">
                           No. Surat Dinas
                         </label>
-                        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300">
-                          Akurasi 99.8%
-                        </span>
+                        {!noSurat ? (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded border border-amber-300">
+                            Opsi Isi Manual
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300">
+                            Akurasi {ocrScanAccuracy.toFixed(1)}%
+                          </span>
+                        )}
                       </div>
                       <input
                         type="text"
@@ -657,14 +783,24 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
                   {/* Row 3: Asal & Klasifikasi */}
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                     <div className="sm:col-span-7">
-                      <label className="text-[11px] uppercase tracking-wider text-[#44474d] font-bold block mb-1">
-                        Asal / Instansi Pengirim
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[11px] uppercase tracking-wider text-[#44474d] font-bold block">
+                          Asal / Instansi Pengirim
+                        </label>
+                        {!asalSurat && (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded border border-amber-300">
+                            Opsi Isi Manual
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="text"
                         value={asalSurat}
                         onChange={(e) => setAsalSurat(e.target.value)}
-                        className="w-full px-3 py-1.5 bg-white rounded border border-[#dae2fd] text-xs font-semibold"
+                        placeholder="Contoh: Mabes TNI / Slog TNI"
+                        className={`w-full px-3 py-1.5 rounded border text-xs font-semibold ${
+                          !asalSurat ? 'bg-amber-50/50 border-amber-400' : 'bg-white border-[#dae2fd]'
+                        }`}
                       />
                     </div>
                     <div className="sm:col-span-5">
@@ -687,25 +823,45 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
                   {/* Perihal & Ringkasan */}
                   <div className="space-y-2">
                     <div>
-                      <label className="text-[11px] uppercase tracking-wider text-[#44474d] font-bold block mb-1">
-                        Perihal Dokumen Resmi
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[11px] uppercase tracking-wider text-[#44474d] font-bold block">
+                          Perihal Dokumen Resmi
+                        </label>
+                        {!perihal && (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded border border-amber-300">
+                            Opsi Isi Manual
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="text"
                         value={perihal}
                         onChange={(e) => setPerihal(e.target.value)}
-                        className="w-full px-3 py-1.5 bg-white rounded border border-[#dae2fd] text-xs font-semibold"
+                        placeholder="Isikan perihal dinas"
+                        className={`w-full px-3 py-1.5 rounded border text-xs font-semibold ${
+                          !perihal ? 'bg-amber-50/50 border-amber-400' : 'bg-white border-[#dae2fd]'
+                        }`}
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] uppercase tracking-wider text-[#44474d] font-bold block mb-1">
-                        Ringkasan Ekstraksi Dokumen (OCR Summary)
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[11px] uppercase tracking-wider text-[#44474d] font-bold block">
+                          Ringkasan Ekstraksi Dokumen (OCR Summary)
+                        </label>
+                        {!ringkasan && (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded border border-amber-300">
+                            Opsi Isi Manual
+                          </span>
+                        )}
+                      </div>
                       <textarea
                         rows={2}
                         value={ringkasan}
                         onChange={(e) => setRingkasan(e.target.value)}
-                        className="w-full px-3 py-1.5 bg-[#f2f3ff] rounded border border-[#dae2fd] text-xs leading-relaxed"
+                        placeholder="Tuliskan ringkasan pokok surat atau isi disposisi penting..."
+                        className={`w-full px-3 py-1.5 rounded border text-xs leading-relaxed ${
+                          !ringkasan ? 'bg-amber-50/50 border-amber-400' : 'bg-[#f2f3ff] border-[#dae2fd]'
+                        }`}
                       />
                     </div>
                   </div>

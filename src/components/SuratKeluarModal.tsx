@@ -14,6 +14,8 @@ import {
   Building
 } from 'lucide-react';
 import { KategoriUrusan, KlasifikasiKeamanan, SuratKeluar } from '../types';
+import { DocumentAiScanUploader } from './DocumentAiScanUploader';
+import { AnalyzedDocumentData } from '../services/documentAnalysis';
 
 interface SuratKeluarModalProps {
   isOpen: boolean;
@@ -44,6 +46,24 @@ export const SuratKeluarModal: React.FC<SuratKeluarModalProps> = ({
   const [konseptor, setKonseptor] = useState('Kolonel Kav. Hartono (Kaur Reg. Minlog)');
   const [statusTTE, setStatusTTE] = useState<SuratKeluar['statusTTE']>('Diparaf Waaslog');
   const [lampiranJumlah, setLampiranJumlah] = useState('1 Lembar');
+
+  // AI OCR Scan & Missing Fields states
+  const [scanFileName, setScanFileName] = useState<string | undefined>(undefined);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  const handleExtractedFromAi = (data: AnalyzedDocumentData, file: File) => {
+    if (data.noSurat) setNoSurat(data.noSurat);
+    if (data.tglSurat) setTglSurat(data.tglSurat);
+    if (data.tglTerimaAtauKirim) setTglKirim(data.tglTerimaAtauKirim);
+    if (data.tujuanPenerima) setTujuanSurat(data.tujuanPenerima);
+    if (data.perihal) setPerihal(data.perihal);
+    if (data.ringkasan) setRingkasan(data.ringkasan);
+    if (data.klasifikasi) setKlasifikasi(data.klasifikasi as any);
+    if (data.konseptor) setKonseptor(data.konseptor);
+    if (data.statusTTE) setStatusTTE(data.statusTTE as any);
+    setScanFileName(file.name);
+    setMissingFields(data.missingFields || []);
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -135,6 +155,12 @@ export const SuratKeluarModal: React.FC<SuratKeluarModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
+          {/* AI OCR SCANNER FOR PDF & PHOTO */}
+          <DocumentAiScanUploader
+            documentType="surat_keluar"
+            onExtracted={handleExtractedFromAi}
+          />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
@@ -149,15 +175,26 @@ export const SuratKeluarModal: React.FC<SuratKeluarModalProps> = ({
               />
             </div>
             <div>
-              <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-                No. Surat Keluar *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                  No. Surat Keluar *
+                </label>
+                {(!noSurat.trim() || missingFields.includes('noSurat')) && (
+                  <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                    Opsi Isi Manual
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={noSurat}
                 onChange={(e) => setNoSurat(e.target.value)}
                 placeholder="Contoh: B/899/II/2025/KONST"
-                className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-mono font-bold text-[#131b2e] focus:ring-1 focus:ring-[#0f1e36]"
+                className={`w-full px-3 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                  (!noSurat.trim() && missingFields.length > 0)
+                    ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                    : 'border-[#dae2fd] bg-white text-[#131b2e]'
+                }`}
                 required
               />
             </div>
@@ -191,43 +228,76 @@ export const SuratKeluarModal: React.FC<SuratKeluarModalProps> = ({
           </div>
 
           <div>
-            <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-              Tujuan Satker / Instansi *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                Tujuan Satker / Instansi *
+              </label>
+              {(!tujuanSurat.trim() || missingFields.includes('tujuanPenerima')) && (
+                <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                  Opsi Isi Manual
+                </span>
+              )}
+            </div>
             <input
               type="text"
               value={tujuanSurat}
               onChange={(e) => setTujuanSurat(e.target.value)}
               placeholder="Contoh: Pangdam Jaya / Aslog Kasdam Jaya"
-              className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-semibold"
+              className={`w-full px-3 py-1.5 rounded-lg border text-xs font-semibold ${
+                (!tujuanSurat.trim() && missingFields.length > 0)
+                  ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                  : 'border-[#dae2fd] bg-white text-[#131b2e]'
+              }`}
               required
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-              Perihal Dokumen Resmi *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                Perihal Dokumen Resmi *
+              </label>
+              {(!perihal.trim() || missingFields.includes('perihal')) && (
+                <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                  Opsi Isi Manual
+                </span>
+              )}
+            </div>
             <input
               type="text"
               value={perihal}
               onChange={(e) => setPerihal(e.target.value)}
               placeholder="Perihal naskah surat keluar..."
-              className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs font-medium"
+              className={`w-full px-3 py-1.5 rounded-lg border text-xs font-medium ${
+                (!perihal.trim() && missingFields.length > 0)
+                  ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                  : 'border-[#dae2fd] bg-white text-[#131b2e]'
+              }`}
               required
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-bold uppercase text-[#44474d] block mb-1">
-              Ringkasan Isi
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold uppercase text-[#44474d] block">
+                Ringkasan Isi
+              </label>
+              {(!ringkasan.trim() || missingFields.includes('ringkasan')) && (
+                <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">
+                  Opsi Isi Manual
+                </span>
+              )}
+            </div>
             <textarea
               rows={2}
               value={ringkasan}
               onChange={(e) => setRingkasan(e.target.value)}
               placeholder="Ringkasan atau poin penting surat..."
-              className="w-full px-3 py-1.5 bg-white rounded-lg border border-[#dae2fd] text-xs leading-relaxed"
+              className={`w-full px-3 py-1.5 rounded-lg border text-xs leading-relaxed ${
+                (!ringkasan.trim() && missingFields.length > 0)
+                  ? 'border-amber-400 ring-2 ring-amber-300/40 bg-amber-50/20'
+                  : 'border-[#dae2fd] bg-white text-[#131b2e]'
+              }`}
             />
           </div>
 
