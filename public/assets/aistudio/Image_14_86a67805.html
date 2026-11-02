@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_dashboard" name="shell-type"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error-container": "#93000a",
+            "on-primary-container": "#7886a3",
+            "secondary-container": "#b5d0fd",
+            "tertiary-fixed-dim": "#ffb68e",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed-variant": "#2d486d",
+            "inverse-primary": "#b8c7e6",
+            "on-tertiary-fixed": "#331200",
+            "on-secondary-container": "#3e5980",
+            "on-error": "#ffffff",
+            "primary": "#000412",
+            "secondary-fixed-dim": "#adc8f5",
+            "primary-fixed": "#d7e3ff",
+            "surface-container-low": "#f2f3ff",
+            "on-surface-variant": "#44474d",
+            "secondary-fixed": "#d5e3ff",
+            "error-container": "#ffdad6",
+            "primary-container": "#0f1e36",
+            "background": "#faf8ff",
+            "on-tertiary-container": "#d16923",
+            "tertiary-fixed": "#ffdbca",
+            "on-primary-fixed-variant": "#394761",
+            "surface-container-high": "#e2e7ff",
+            "on-tertiary-fixed-variant": "#763300",
+            "surface-container-highest": "#dae2fd",
+            "primary-fixed-dim": "#b8c7e6",
+            "surface-bright": "#faf8ff",
+            "tertiary-container": "#371400",
+            "tertiary": "#0e0300",
+            "inverse-surface": "#283044",
+            "secondary": "#455f87",
+            "surface": "#faf8ff",
+            "on-background": "#131b2e",
+            "surface-dim": "#d2d9f4",
+            "outline": "#75777e",
+            "on-secondary": "#ffffff",
+            "on-surface": "#131b2e",
+            "surface-variant": "#dae2fd",
+            "surface-tint": "#515f7a",
+            "inverse-on-surface": "#eef0ff",
+            "outline-variant": "#c5c6ce",
+            "on-primary-fixed": "#0c1b33",
+            "surface-container": "#eaedff",
+            "on-secondary-fixed": "#001c3b",
+            "error": "#ba1a1a",
+            "on-tertiary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "margin": "2rem",
+            "gutter-mobile": "0.75rem",
+            "space-xs": "0.25rem",
+            "margin-mobile": "1rem",
+            "space-md": "1rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "label-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-xl-mobile": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased overflow-hidden">
+<!-- SIDEBAR NAVIGATION -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-primary-container z-20 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+<div class="flex flex-col">
+<div class="h-16 px-space-md flex items-center gap-space-sm bg-primary/40">
+<img alt="SIMONAS Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Ul-n5YKoBUw29ts6O0ZKoZZAS5uMS2--sRYcZumMm-yJe_gKtqDGQ4PeGF1tM47zVZf_8p003L2K2WjOJG6Er-h2kPtnbyY_xqTAX9xkOFhsB1jDkYKnm6kfCczKEBfQij9nnud33e7iKCzaELbAV6g0x57MfNXz1cTKlKfDzPdMfi5mFaueCPeP2rwxVwhyCVhuefZUyr2DoUcl2EJh9tVWH3jHb2ELUFTR0oYnfISnm6j-mkXuiykx0"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-primary tracking-tight leading-none">SIMONAS</span>
+<span class="font-label-sm text-label-sm text-on-primary-container tracking-wider uppercase leading-none mt-1">Komando Logistik</span>
+</div>
+</div>
+<div class="px-space-md py-space-sm">
+<div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded-lg bg-surface-container-highest/10 text-on-primary-container font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span class="truncate">SINKRON: SIMONAS_DB</span>
+</div>
+</div>
+<nav class="flex flex-col gap-space-xs px-space-sm mt-space-xs">
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-primary-container hover:bg-surface-container-high/20 hover:text-on-primary transition-colors font-label-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>Dashboard Utama
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-primary-container hover:bg-surface-container-high/20 hover:text-on-primary transition-colors font-label-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">mark_email_unread</span>Agenda Surat Masuk
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-primary-container hover:bg-surface-container-high/20 hover:text-on-primary transition-colors font-label-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>Agenda Surat Keluar
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-primary-container hover:bg-surface-container-high/20 hover:text-on-primary transition-colors font-label-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">pending_actions</span>Tindak Lanjut &amp; Konsep
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-primary-container hover:bg-surface-container-high/20 hover:text-on-primary transition-colors font-label-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">document_scanner</span>Scanner OCR / Berkas
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-primary-container hover:bg-surface-container-high/20 hover:text-on-primary transition-colors font-label-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">database</span>Pengaturan &amp; Database
+        </a>
+</nav>
+</div>
+<div class="p-space-md bg-primary/20">
+<div class="flex items-center gap-space-sm">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed"></div>
+<span class="font-label-sm text-label-sm text-on-primary-container">v4.2.0 • Jalur Terenkripsi</span>
+</div>
+</div>
+</aside>
+<!-- MAIN APP WRAPPER (BACKGROUND BEHIND MODAL) -->
+<div class="pl-64 min-h-screen filter blur-[2px] opacity-70 pointer-events-none select-none">
+<header class="h-16 bg-surface/80 border-b border-surface-container-high flex items-center justify-between px-gutter">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant font-body-sm">
+<span class="material-symbols-outlined text-[18px]">search</span>
+<span>Pencarian Cepat Berkas (Ctrl+K)...</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center bg-surface-container-low p-1 rounded-lg">
+<span class="px-2 py-1 text-xs">Pelihat</span>
+<span class="px-2 py-1 text-xs">Staf 1</span>
+<span class="px-2 py-1 text-xs bg-primary-container text-on-primary rounded font-bold">Staf 3 / Admin</span>
+</div>
+</div>
+</header>
+<main class="p-gutter space-y-4"><div class="flex flex-col w-full">
+<!-- TOP CONTEXT BANNER (HIGH VISIBILITY COMMAND ADVISORY) -->
+<header class="w-full bg-surface-container-lowest shadow-md rounded-xl p-space-md sm:p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[20px]">rate_review</span>
+</div>
+<div>
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface">Verifikasi &amp; Koreksi Hasil Ekstraksi Tulisan Tangan Disposisi</span>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-tertiary-container text-on-tertiary-container animate-pulse-subtle">
+              HUMAN-IN-THE-LOOP ACTIVE
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Prosedur Standar SIMONAS: Mitigasi ambiguitas coretan pena basah sebelum komitmen data ke basis data terenkripsi.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface">
+<span class="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
+<span class="font-label-sm text-label-sm uppercase text-error tracking-wider">Perhatian Khusus</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-mono">Keyakinan OCR: 68.2% Ambigu (Waaslog)</span>
+</div>
+</div>
+<!-- METADATA STRIP & SOP GUIDELINE -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-sm items-center pt-space-xs">
+<div class="lg:col-span-8 flex flex-wrap items-center gap-x-space-md gap-y-1 bg-surface-container-low px-space-md py-2.5 rounded-lg font-body-sm text-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">No. Agenda:</span>
+<span class="font-mono font-label-md text-label-md text-on-surface">AG-SM/2025/00144</span>
+</div>
+<span class="text-outline-variant font-mono">•</span>
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">No. Surat:</span>
+<span class="font-mono font-label-md text-label-md text-on-surface">B/1429/II/2025/LOG</span>
+</div>
+<span class="text-outline-variant font-mono">•</span>
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Asal:</span>
+<span class="font-label-md text-label-md text-on-surface">Mabes TNI / Slog TNI</span>
+</div>
+<span class="text-outline-variant font-mono">•</span>
+<div class="flex items-center gap-1">
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-error-container text-on-error-container">
+            KILAT / RAHASIA
+          </span>
+</div>
+</div>
+<div class="lg:col-span-4 flex items-center gap-2 bg-surface-container px-space-md py-2.5 rounded-lg text-on-secondary-container">
+<span class="material-symbols-outlined text-[18px] shrink-0">shield_with_heart</span>
+<p class="font-body-sm text-body-sm leading-tight text-on-surface">
+<strong>Panduan Staf:</strong> Bandingkan potongan resolusi tinggi dengan 19 klausul resmi satuan. Hindari spekulasi redaksi.
+        </p>
+</div>
+</div>
+</header>
+<!-- MAIN VERIFICATION WORKBENCH (SIDE-BY-SIDE SPLIT) -->
+<main class="w-full grid grid-cols-1 lg:grid-cols-12 gap-space-md mt-space-md">
+<!-- LEFT PANEL: HIGH-PRECISION INK MAGNIFIER & FORENSIC CROP -->
+<section class="lg:col-span-5 bg-surface-container-lowest shadow-md rounded-xl p-space-md flex flex-col justify-between">
+<div class="flex flex-col gap-space-sm">
+<!-- TOOLBAR: FILTER CONTROLS & ZOOM -->
+<div class="flex flex-wrap items-center justify-between gap-space-xs pb-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">biotech</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Lensa Forensik Naskah</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg">
+<button class="px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container-lowest shadow-sm text-on-surface transition-colors" id="btn-filter-normal" onclick="applyFilter('normal')" type="button">
+              Normal
+            </button>
+<button class="px-2.5 py-1 rounded text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-colors" id="btn-filter-contrast" onclick="applyFilter('contrast')" type="button">
+              High-Cont
+            </button>
+<button class="px-2.5 py-1 rounded text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-colors" id="btn-filter-mono" onclick="applyFilter('mono')" type="button">
+              Invert B/W
+            </button>
+</div>
+</div>
+<!-- MAGNIFIER VIEWPORT CANVAS WITH BOUNDING BOX & INK SIMULATION -->
+<div class="relative w-full rounded-lg bg-surface-container-high overflow-hidden shadow-inner p-space-sm">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant pb-1.5">
+<span class="font-mono">FOV: Sektor Disposisi III [Waaslog]</span>
+<span class="font-mono bg-surface-container px-2 py-0.5 rounded text-on-surface" id="zoom-indicator">250% Pembesaran</span>
+</div>
+<!-- Interactive Crop Container -->
+<div class="relative w-full h-64 rounded bg-surface-bright flex items-center justify-center overflow-hidden transition-all duration-300" id="ink-viewport">
+<!-- Simulated High Resolution Physical Paper Texture with Pen Cursive & Paraf -->
+<div class="w-full h-full p-4 flex flex-col justify-center items-center relative transition-transform duration-300 scale-125 select-none" id="ink-canvas-content">
+<!-- Subtle Paper Texture Grid Pattern via SVG -->
+<svg class="absolute inset-0 w-full h-full opacity-10 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="20" id="paper-grid" patternunits="userSpaceOnUse" width="20">
+<path class="text-on-surface" d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.5"></path>
+</pattern>
+</defs>
+<rect fill="url(#paper-grid)" height="100%" width="100%"></rect>
+</svg>
+<!-- Authentic Wet Blue Ink Disposisi & Cursive Stroke Overlay -->
+<div class="relative w-full max-w-sm p-3 bg-surface-container-lowest/80 rounded shadow-sm">
+<div class="flex items-center justify-between pb-1 text-label-sm font-label-sm text-on-surface-variant">
+<span class="uppercase">Kolom: WAASLOG (Coretan Basah)</span>
+<span class="text-error font-mono text-[10px]">Tumpang Tindih Paraf</span>
+</div>
+<!-- Hand-Drawn SVG Simulation of Real Cursive Military Wet Pen Stroke -->
+<div class="relative py-2 flex items-center justify-center">
+<svg class="w-full h-24 overflow-visible" viewbox="0 0 380 90" xmlns="http://www.w3.org/2000/svg">
+<!-- Blue Pen Wet Cursive Disposisi -->
+<path class="opacity-95" d="M 20 45 Q 35 20, 50 48 T 80 40 T 115 52 T 145 35 T 175 50" fill="none" stroke="#1d4ed8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6"></path>
+<path class="opacity-90" d="M 185 45 Q 200 30, 220 50 T 255 42 T 280 48 T 320 38" fill="none" stroke="#1e40af" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3"></path>
+<!-- Wet Blue Ink Text Silhouette: 'Koor. dg Paban IV ...' -->
+<text fill="#1e3a8a" font-family="serif" font-size="21" font-style="italic" font-weight="bold" letter-spacing="1" x="24" y="44">Koor. dg Paban IV</text>
+<text fill="#1d4ed8" font-family="serif" font-size="19" font-style="italic" font-weight="bold" letter-spacing="0.5" x="205" y="44">ttg alokasi / rapim</text>
+<!-- Overlapping Official Paraf Stamp/Scribble in Dark Ink -->
+<path d="M 285 20 C 310 10, 340 30, 320 60 C 300 90, 270 70, 300 45 C 330 20, 360 55, 345 80" fill="none" opacity="0.85" stroke="#0f172a" stroke-linecap="round" stroke-width="2"></path>
+<!-- OCR Bounding Box Ambiguity Visual Indicators -->
+<rect fill="none" height="34" opacity="0.9" stroke="#f59e0b" stroke-dasharray="4 2" stroke-width="1.8" width="168" x="18" y="22"></rect>
+<rect fill="none" height="34" opacity="0.9" stroke="#ef4444" stroke-dasharray="3 3" stroke-width="1.8" width="170" x="195" y="24"></rect>
+</svg>
+</div>
+<!-- Bounding Box Footnotes -->
+<div class="flex items-center justify-between text-label-sm font-label-sm pt-1">
+<span class="text-tertiary-container font-mono bg-tertiary-fixed px-1.5 rounded">Zona 1: 'Koor...' (74%)</span>
+<span class="text-on-error-container font-mono bg-error-container px-1.5 rounded">Zona 2: Ambiguitas Paraf</span>
+</div>
+</div>
+</div>
+<!-- Optical Focus Reticle UI -->
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+<div class="w-16 h-16 rounded-full bg-secondary-container/10 flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+</div>
+</div>
+</div>
+<!-- Zoom & Magnifier Slider Strip -->
+<div class="flex items-center justify-between gap-space-sm pt-space-xs text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">zoom_in</span>
+<button class="px-2 py-0.5 rounded text-label-sm font-label-sm hover:bg-surface-container transition-colors" onclick="setZoom(100)" type="button">100%</button>
+<button class="px-2 py-0.5 rounded text-label-sm font-label-sm hover:bg-surface-container transition-colors" onclick="setZoom(200)" type="button">200%</button>
+<button class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-on-surface font-bold transition-colors" onclick="setZoom(250)" type="button">250%</button>
+<button class="px-2 py-0.5 rounded text-label-sm font-label-sm hover:bg-surface-container transition-colors" onclick="setZoom(300)" type="button">300%</button>
+</div>
+<span class="font-mono text-label-sm font-label-sm">Lens: 1200 DPI Raw Matrix</span>
+</div>
+</div>
+<!-- AI CONFIDENCE BREAKDOWN MATRIX -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Rincian Keyakinan OCR (Per Kata)</span>
+<span class="font-mono text-label-sm font-label-sm text-secondary">Engine: Vision-OCR v2.8</span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs font-mono">
+<div class="p-2 rounded bg-surface-container-lowest flex flex-col">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Token 1</span>
+<span class="text-body-sm font-body-sm font-bold text-on-surface truncate">"Koor..."</span>
+<span class="text-label-sm font-label-sm text-secondary-fixed-dim bg-secondary px-1 py-0.2 rounded mt-1 text-center font-bold">74% Prediksi</span>
+</div>
+<div class="p-2 rounded bg-surface-container-lowest flex flex-col">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Token 2</span>
+<span class="text-body-sm font-body-sm font-bold text-on-surface truncate">"dg..."</span>
+<span class="text-label-sm font-label-sm text-secondary-container text-on-secondary-container bg-surface-container-high px-1 py-0.2 rounded mt-1 text-center font-bold">82% Prediksi</span>
+</div>
+<div class="p-2 rounded bg-surface-container-lowest flex flex-col">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Token 3</span>
+<span class="text-body-sm font-body-sm font-bold text-on-surface truncate">"Paban..."</span>
+<span class="text-label-sm font-label-sm text-on-error-container bg-error-container px-1 py-0.2 rounded mt-1 text-center font-bold">61% Rendah</span>
+</div>
+</div>
+<div class="p-2 rounded bg-surface-container-high text-body-sm font-body-sm flex items-start gap-2 mt-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant shrink-0 mt-0.5">info</span>
+<p class="text-on-surface leading-tight">
+<strong>Catatan AI Engine:</strong> Coretan miring rapat disertai tarikan garis paraf pejabat yang memotong kata sandi disposisi sehingga memicu ambiguitas leksikal.
+            </p>
+</div>
+</div>
+</div>
+<!-- Left Panel Bottom Quick Metric -->
+<div class="pt-space-sm mt-space-sm flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+          Audit Forensik Image Hash: SHA-256 (e8b9...f4a1)
+        </span>
+<span class="font-mono">Kamera Pemindai: Kodiklat-02</span>
+</div>
+</section>
+<!-- RIGHT PANEL: HUMAN-IN-THE-LOOP CORRECTION WORKBENCH -->
+<section class="lg:col-span-7 bg-surface-container-lowest shadow-md rounded-xl p-space-md sm:p-space-lg flex flex-col justify-between">
+<div class="flex flex-col gap-space-md">
+<!-- OFFICER HIERARCHY SELECTOR TABS -->
+<div>
+<div class="flex items-center justify-between pb-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Pusat Penetapan Pilihan Disposisi Resmi</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Format 19 Klausul Kodiklat TNI</span>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-xs">
+<!-- 1. Panglima (Auto-Verified) -->
+<button class="p-2.5 rounded-lg bg-surface-container-low text-left hover:bg-surface-container transition-colors flex flex-col gap-1" id="tab-btn-panglima" onclick="switchOfficerTab('panglima')" type="button">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">I. PANGLIMA</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface truncate">96% Terverifikasi</span>
+</button>
+<!-- 2. Aslog (Auto-Verified) -->
+<button class="p-2.5 rounded-lg bg-surface-container-low text-left hover:bg-surface-container transition-colors flex flex-col gap-1" id="tab-btn-aslog" onclick="switchOfficerTab('aslog')" type="button">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">II. ASLOG</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface truncate">94% Terverifikasi</span>
+</button>
+<!-- 3. Waaslog (ACTIVE CORRECTION REQUIRED) -->
+<button class="p-2.5 rounded-lg bg-primary-container text-on-primary text-left shadow-sm flex flex-col gap-1 relative overflow-hidden" id="tab-btn-waaslog" onclick="switchOfficerTab('waaslog')" type="button">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-primary-container">III. WAASLOG</span>
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">priority_high</span>
+</div>
+<span class="font-label-md text-label-md text-on-primary font-bold truncate">Koreksi Manual</span>
+<span class="w-1.5 h-1.5 rounded-full bg-error absolute top-1.5 right-1.5"></span>
+</button>
+<!-- 4. Paban IV (Auto-Verified) -->
+<button class="p-2.5 rounded-lg bg-surface-container-low text-left hover:bg-surface-container transition-colors flex flex-col gap-1" id="tab-btn-paban" onclick="switchOfficerTab('paban')" type="button">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">IV. PABAN IV</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface truncate">92% Terverifikasi</span>
+</button>
+</div>
+</div>
+<!-- WAASLOG CORRECTION SECTION CONTAINER -->
+<div class="flex flex-col gap-space-md" id="officer-content-waaslog">
+<!-- Raw OCR Result Alert & Warning -->
+<div class="p-space-sm rounded-lg bg-surface-container-high flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Hasil Bacaan OCR Mentah (Perlu Dikonfirmasi):</span>
+<span class="font-mono text-label-sm font-label-sm bg-error-container text-on-error-container px-2 py-0.2 rounded font-bold">Skor: 68.2% Ambigu</span>
+</div>
+<p class="font-mono font-body-sm text-body-sm text-on-surface bg-surface-container-lowest p-2 rounded">
+              "kord. dg Paban IV ttg alokasi munisi / rapim"
+            </p>
+</div>
+<!-- 19 OFFICIAL DISPOSITION CLAUSES CHECKLIST GRID WITH REAL-TIME FILTER -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex flex-wrap items-center justify-between gap-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-on-surface">checklist</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">19 Pilihan Disposisi Resmi Satuan</span>
+</div>
+<!-- Quick Filter Search Input -->
+<div class="relative w-48 sm:w-56">
+<input class="w-full px-2.5 py-1 text-body-sm font-body-sm bg-surface-container-low rounded text-on-surface placeholder:text-on-surface-variant outline-none focus:bg-surface-container-lowest" id="clause-search-input" onkeyup="filterClauses()" placeholder="Cari klausul resmi..." type="text"/>
+<span class="material-symbols-outlined absolute right-2 top-1 text-[16px] text-on-surface-variant pointer-events-none">search</span>
+</div>
+</div>
+<!-- The 19 Official Military Clauses Checklist -->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-52 overflow-y-auto p-1 bg-surface-container-low rounded-lg" id="clauses-container">
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">ACC</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">Aksi/TDL</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">Laporkan</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">siapkan</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">minitor/ikuti perkemb.</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">sbg bahan/pelajari</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">agendakan/acarakan</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">diskusikan/rapatkan</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">ssi diposisi pang tni</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">ssi disposisi Kasau</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">UDK</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">UMP/pedomani</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">teruskan</span>
+</label>
+<!-- SELECTED ITEM (CORRECTED CLAUSE) -->
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-primary-container text-on-primary transition-colors cursor-pointer shadow-sm">
+<input checked="" class="rounded text-secondary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm font-bold text-on-primary">koordinasi (DIPILIH)</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">record/catat</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">takahkan/arsipkan</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">aksi wakili/hadir</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">saran tanggapan</span>
+</label>
+<label class="clause-item flex items-center gap-2 p-2 rounded bg-surface-container-lowest hover:bg-surface-container-high transition-colors cursor-pointer">
+<input class="rounded text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="font-mono text-label-sm font-label-sm text-on-surface">catatan tambahan</span>
+</label>
+</div>
+</div>
+<!-- INPUT FORM: REDAKSI CATATAN KOREKSI MANUAL OLEH STAF -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold" for="waaslog-notes">
+                Redaksi Catatan Tambahan Manual Hasil Verifikasi Staf:
+              </label>
+<span class="font-mono text-label-sm font-label-sm text-secondary">Terbaca Bersih</span>
+</div>
+<textarea class="w-full p-2.5 rounded bg-surface-container-low text-body-sm font-body-sm text-on-surface outline-none focus:bg-surface-container-lowest transition-colors leading-relaxed" id="waaslog-notes" rows="2">Koordinasikan dengan Paban IV terkait kesiapan dermaga bongkar muat Lanud Manuhua Biak sebelum H-3.</textarea>
+</div>
+<!-- VERIFIER RESOLUTION RADIO OPTIONS -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold">Status Ketetapan Verifikator:</span>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-xs font-body-sm text-body-sm">
+<label class="flex items-center gap-2 p-2 rounded bg-surface-container-lowest cursor-pointer">
+<input checked="" class="text-primary focus:ring-0" name="verifier-status" type="radio"/>
+<span class="text-on-surface text-label-sm font-label-sm font-bold">Telah Dikonfirmasi Fisik</span>
+</label>
+<label class="flex items-center gap-2 p-2 rounded bg-surface-container-lowest cursor-pointer">
+<input class="text-primary focus:ring-0" name="verifier-status" type="radio"/>
+<span class="text-on-surface text-label-sm font-label-sm">Tidak Terbaca (Eskalasi)</span>
+</label>
+<label class="flex items-center gap-2 p-2 rounded bg-surface-container-lowest cursor-pointer">
+<input class="text-primary focus:ring-0" name="verifier-status" type="radio"/>
+<span class="text-on-surface text-label-sm font-label-sm">Koreksi Redaksional</span>
+</label>
+</div>
+</div>
+</div>
+<!-- OTHER OFFICERS SUMMARY (COLLAPSED / REFERENCE PREVIEW) -->
+<div class="hidden p-space-md rounded-lg bg-surface-container-low flex-col gap-space-sm" id="officer-content-other">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface" id="other-officer-title">Data Terverifikasi</span>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary text-on-secondary">Status Sah</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="other-officer-desc"></p>
+<button class="w-fit px-3 py-1.5 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm" onclick="switchOfficerTab('waaslog')" type="button">
+            Kembali ke Antrean Koreksi Waaslog
+          </button>
+</div>
+</div>
+<!-- Right Panel Guidance Note -->
+<div class="pt-space-sm mt-space-sm flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Kepatuhan: SOP Minlog Mabes TNI Pasal 14 Ayat (2)</span>
+<span class="font-mono">Otentikasi: Level 3 Staf 3</span>
+</div>
+</section>
+</main>
+<!-- BOTTOM AUDIT TRAIL LOG & FINAL COMMIT ACTION BAR -->
+<footer class="w-full mt-space-md bg-surface-container-lowest shadow-md rounded-xl p-space-md flex flex-col lg:flex-row items-center justify-between gap-space-md">
+<!-- AUDIT TRAIL DETAILS -->
+<div class="flex items-center gap-space-sm w-full lg:w-auto">
+<div class="w-10 h-10 rounded-lg bg-surface-container text-on-surface flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">history_edu</span>
+</div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface">Operator Verifikator:</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-mono">
+            Kol. Kav. Hartono (Staf 3 / Admin Minlog)
+          </span>
+<span class="text-on-surface-variant font-mono text-label-sm font-label-sm">
+            28 Feb 2025, 08:42:15 WIB
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Jejak audit forensik mencatat pergeseran nilai raw OCR ke hasil verifikasi staf berwenang secara permanen.
+        </p>
+</div>
+</div>
+<!-- ACTION BUTTON GROUP -->
+<div class="flex flex-wrap items-center justify-end gap-space-xs w-full lg:w-auto shrink-0">
+<button class="px-3.5 py-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-colors flex items-center gap-1.5" onclick="alert('Membuka lembar scan dokumen fisik utuh A4...')" type="button">
+<span class="material-symbols-outlined text-[18px]">preview</span>
+<span>Pratinjau Utuh</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-colors flex items-center gap-1.5" onclick="resetOcrReading()" type="button">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+<span>Reset ke Bacaan OCR Awal</span>
+</button>
+<button class="px-5 py-2 rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-lg text-label-lg transition-colors shadow-md flex items-center gap-2" onclick="commitCorrection()" type="button">
+<span class="material-symbols-outlined text-[20px]">cloud_done</span>
+<span>Simpan Koreksi ke SIMONAS_DB</span>
+</button>
+</div>
+</footer>
+<!-- EMBEDDED INTERACTION LOGIC (PURE CLIENT-SIDE JAVASCRIPT) -->
+<script>
+    function applyFilter(mode) {
+      const canvas = document.getElementById('ink-canvas-content');
+      const bNormal = document.getElementById('btn-filter-normal');
+      const bContrast = document.getElementById('btn-filter-contrast');
+      const bMono = document.getElementById('btn-filter-mono');
+
+      bNormal.className = "px-2.5 py-1 rounded text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-colors";
+      bContrast.className = "px-2.5 py-1 rounded text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-colors";
+      bMono.className = "px-2.5 py-1 rounded text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface transition-colors";
+
+      if (mode === 'normal') {
+        canvas.style.filter = "none";
+        bNormal.className = "px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container-lowest shadow-sm text-on-surface transition-colors";
+      } else if (mode === 'contrast') {
+        canvas.style.filter = "contrast(240%) brightness(95%)";
+        bContrast.className = "px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container-lowest shadow-sm text-on-surface transition-colors";
+      } else if (mode === 'mono') {
+        canvas.style.filter = "grayscale(100%) invert(85%) contrast(200%)";
+        bMono.className = "px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container-lowest shadow-sm text-on-surface transition-colors";
+      }
+    }
+
+    function setZoom(level) {
+      const canvas = document.getElementById('ink-canvas-content');
+      const indicator = document.getElementById('zoom-indicator');
+      canvas.style.transform = `scale(${level / 100})`;
+      indicator.textContent = `${level}% Pembesaran`;
+    }
+
+    function filterClauses() {
+      const input = document.getElementById('clause-search-input');
+      const filter = input.value.toLowerCase();
+      const items = document.getElementsByClassName('clause-item');
+
+      for (let i = 0; i < items.length; i++) {
+        const text = items[i].textContent || items[i].innerText;
+        if (text.toLowerCase().indexOf(filter) > -1) {
+          items[i].style.display = "flex";
+        } else {
+          items[i].style.display = "none";
+        }
+      }
+    }
+
+    function switchOfficerTab(officer) {
+      const contentWaaslog = document.getElementById('officer-content-waaslog');
+      const contentOther = document.getElementById('officer-content-other');
+      const otherTitle = document.getElementById('other-officer-title');
+      const otherDesc = document.getElementById('other-officer-desc');
+
+      if (officer === 'waaslog') {
+        contentWaaslog.classList.remove('hidden');
+        contentWaaslog.classList.add('flex');
+        contentOther.classList.add('hidden');
+        contentOther.classList.remove('flex');
+      } else {
+        contentWaaslog.classList.add('hidden');
+        contentWaaslog.classList.remove('flex');
+        contentOther.classList.remove('hidden');
+        contentOther.classList.add('flex');
+
+        if (officer === 'panglima') {
+          otherTitle.textContent = "Disposisi Panglima Komando";
+          otherDesc.textContent = "Klausul Terpilih: [v] Aksi/TDL, [v] Laporkan. Catatan Instruksi: 'Selesaikan sebelum 5 Maret 2025.' Telah tervalidasi otomatis oleh AI dengan tingkat keyakinan 96.4%.";
+        } else if (officer === 'aslog') {
+          otherTitle.textContent = "Disposisi Asisten Logistik (Aslog)";
+          otherDesc.textContent = "Klausul Terpilih: [v] ssi disposisi pang tni. Catatan Instruksi: 'Paban IV koordinasikan dgn Bekpal.' Telah tervalidasi otomatis dengan tingkat keyakinan 94.1%.";
+        } else if (officer === 'paban') {
+          otherTitle.textContent = "Disposisi Paban IV / Minlog";
+          otherDesc.textContent = "Klausul Terpilih: [v] siapkan, [v] UMP/pedomani. Catatan Instruksi: 'Takah berkas & koordinasi kaur reg.' Telah tervalidasi otomatis dengan tingkat keyakinan 92.0%.";
+        }
+      }
+    }
+
+    function resetOcrReading() {
+      const notes = document.getElementById('waaslog-notes');
+      notes.value = "kord. dg Paban IV ttg alokasi munisi / rapim";
+      alert('Teks dikembalikan ke pembacaan mentah OCR untuk pemeriksaan ulang.');
+    }
+
+    function commitCorrection() {
+      alert('Koreksi berhasil divalidasi! Data tersimpan di SIMONAS_DB, dicadangkan ke Google Drive, dan status dokumen diperbarui menjadi "SIAP TERBITKAN DISPOSISI".');
+    }
+  </script>
+</div></main>
+</div>
+<!-- ========================================================================= -->
+<!-- MODAL CONTAINER FULL-SCREEN LAYER DENGAN BACKDROP BLUR & DUA MODAL AKTIF -->
+<!-- ========================================================================= -->
+<div class="fixed inset-0 z-50 overflow-y-auto bg-primary/70 backdrop-blur-md flex flex-col justify-start items-center p-3 sm:p-5 md:p-6" id="super-modal-hub">
+<!-- MASTER TOP BAR: TOGGLE SWITCH ANTARA DUA MODAL UTAMA -->
+<header class="w-full max-w-[1520px] bg-primary-container text-on-primary rounded-t-2xl shadow-2xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 border-b border-primary/40 shrink-0">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-on-primary shadow-inner border border-white/10">
+<span class="material-symbols-outlined text-[24px]">view_in_ar</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h1 class="font-headline-sm text-[17px] font-bold text-on-primary tracking-tight leading-none">Pusat Pemrosesan Dokumen &amp; Disposisi Militer</h1>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">SIMONAS ACTIVE MODAL SYSTEM</span>
+</div>
+<p class="font-body-sm text-[12px] text-on-primary-container mt-1">Akses cepat berdampingan: Ekstraksi AI Vision OCR &amp; Format Resmi Tata Naskah TNI</p>
+</div>
+</div>
+<!-- INTERACTIVE TAB SWITCHER (DUA MODAL TERPADU) -->
+<div class="flex items-center bg-black/30 p-1 rounded-xl border border-white/10">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md font-bold transition-all bg-surface-container-highest text-primary-container shadow" id="tab-btn-ocr" onclick="switchModalView('ocr')">
+<span class="material-symbols-outlined text-[18px]">document_scanner</span>
+<span>1. Modal Input OCR Cerdas (Foto/PDF)</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md font-semibold text-on-primary-container hover:text-on-primary transition-all" id="tab-btn-print" onclick="switchModalView('print')">
+<span class="material-symbols-outlined text-[18px]">print</span>
+<span>2. Pratinjau Cetak Lembar Disposisi Fisik</span>
+<span class="px-1.5 py-0.2 rounded text-[10px] bg-secondary text-white font-mono">A4 Ready</span>
+</button>
+<button class="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-lg font-label-md text-label-md font-semibold text-on-primary-container hover:text-on-primary transition-all ml-1 border-l border-white/10 pl-3" id="tab-btn-split" onclick="switchModalView('split')" title="Tampilkan Berdampingan Layar Penuh">
+<span class="material-symbols-outlined text-[18px]">vertical_split</span>
+<span>Berdampingan</span>
+</button>
+</div>
+<!-- Quick Action Controls -->
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-primary-container font-mono hidden sm:inline">User: Kol. Kav. Hartono (Staf 3)</span>
+<button class="text-on-primary-container hover:text-on-primary p-2 rounded-lg hover:bg-white/10 transition-colors" onclick="alert('Tekan ESC atau alihkan tab untuk navigasi')" title="Tutup Semua Modal">
+<span class="material-symbols-outlined text-[22px]">close</span>
+</button>
+</div>
+</header>
+<!-- WORKSPACE CANVAS FOR BOTH MODALS -->
+<div class="w-full max-w-[1520px] bg-surface-container-lowest rounded-b-2xl shadow-2xl border border-surface-container-high overflow-hidden flex-1 flex flex-col mb-4">
+<!-- ========================================================================= -->
+<!-- MODAL 1: MODAL INPUT OCR CERDAS (FOTO / PDF) -->
+<!-- ========================================================================= -->
+<section class="flex flex-col flex-1 divide-y divide-surface-container-high transition-all" id="view-ocr-modal">
+<!-- Status Bar Hasil OCR Sesuai Spesifikasi -->
+<div class="bg-surface-container-low px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-surface-container-high">
+<div class="flex items-center gap-2.5">
+<span class="flex h-3 w-3 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Status Analisis OCR:</span>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              Analisis OCR Selesai - Tingkat Akurasi 98.4% (1 bidang perlu verifikasi manual)
+            </span>
+</div>
+<!-- Pilihan Jenis Dokumen Sesuai Permintaan -->
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Jenis Dokumen:</span>
+<div class="inline-flex rounded-lg bg-surface-container-lowest p-1 border border-surface-container-high shadow-sm">
+<button class="px-3 py-1 rounded-md text-xs font-bold bg-primary-container text-on-primary shadow-sm flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[14px]">check</span> Surat Masuk (Terpilih)
+              </button>
+<button class="px-3 py-1 rounded-md text-xs font-medium text-on-surface-variant hover:text-on-surface" type="button">
+                Surat Keluar
+              </button>
+</div>
+<div class="h-4 w-px bg-surface-container-high"></div>
+<span class="font-mono text-xs text-secondary font-semibold">Engine: Vision-OCR v2.8 MilSpec</span>
+</div>
+</div>
+<!-- 2-COLUMN LAYOUT OCR: SISI KIRI (SCAN FISIK) & SISI KANAN (FORM DRAF OCR) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 flex-1 min-h-[660px]">
+<!-- ========================================== -->
+<!-- SISI KIRI: PREVIEW SCAN DOKUMEN ASLI MILITER -->
+<!-- ========================================== -->
+<div class="lg:col-span-6 bg-slate-900/95 text-slate-100 p-4 lg:p-5 flex flex-col justify-between border-r border-surface-container-high relative select-none">
+<!-- Scan Toolbar Controls: Zoom, Rotasi, Ganti File -->
+<div class="flex items-center justify-between pb-3 border-b border-slate-700/80 shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-400 text-[20px]">document_scanner</span>
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wider text-slate-200">Pratinjau Scan Dokumen Asli (PDF/A)</span>
+</div>
+<div class="flex items-center gap-1.5 bg-slate-800/90 p-1 rounded-lg border border-slate-700">
+<button class="p-1.5 rounded hover:bg-slate-700 text-slate-200 hover:text-white transition-colors" onclick="adjustZoom(10)" title="Perbesar (+)" type="button">
+<span class="material-symbols-outlined text-[18px]">zoom_in</span>
+</button>
+<span class="text-[11px] font-mono px-1.5 text-slate-400" id="zoom-text">100%</span>
+<button class="p-1.5 rounded hover:bg-slate-700 text-slate-200 hover:text-white transition-colors" onclick="adjustZoom(-10)" title="Perkecil (-)" type="button">
+<span class="material-symbols-outlined text-[18px]">zoom_out</span>
+</button>
+<div class="w-px h-3.5 bg-slate-700 mx-0.5"></div>
+<button class="p-1.5 rounded hover:bg-slate-700 text-slate-200 hover:text-white transition-colors" onclick="rotatePreview()" title="Rotasi 90°" type="button">
+<span class="material-symbols-outlined text-[18px]">rotate_right</span>
+</button>
+<button class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100 text-xs font-medium flex items-center gap-1" title="Ganti Berkas Scan" type="button">
+<span class="material-symbols-outlined text-[14px]">upload_file</span>
+<span>Ganti File</span>
+</button>
+</div>
+</div>
+<!-- SIMULASI LEMBAR FISIK DOKUMEN MILITER LENGKAP BOUNDING BOX -->
+<div class="flex-1 my-3 bg-slate-950/70 p-3 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden relative">
+<!-- Kertas Dokumen Fisik Bernuansa Otentik -->
+<div class="w-full max-w-[520px] bg-[#fbfbf9] text-slate-900 rounded-sm shadow-2xl p-6 sm:p-7 font-serif text-[11px] leading-tight border border-slate-300 relative transition-transform duration-200" id="document-sheet">
+<!-- Bounding Box Hijau: KOP RESMI MABES TNI (Pasti) -->
+<div class="relative border-2 border-emerald-500 bg-emerald-500/5 p-2 rounded-xs group mb-3">
+<span class="absolute -top-2.5 -right-1 px-1.5 py-0.2 bg-emerald-600 text-white font-sans font-bold text-[8px] rounded uppercase tracking-wider">
+                    OCR PASTI 100%
+                  </span>
+<div class="text-center font-sans tracking-wide">
+<p class="font-bold text-[12px] uppercase tracking-wider text-slate-900">MARKAS BESAR TENTARA NASIONAL INDONESIA</p>
+<p class="font-semibold text-[11px] text-slate-800">STAF LOGISTIK</p>
+<p class="text-[9px] text-slate-600 italic">Jalan Raya Hankam, Cilangkap, Jakarta Timur 13870</p>
+</div>
+</div>
+<!-- Cap Dinas Resmi Stempel Merah & Biru Militer -->
+<div class="absolute top-20 right-8 pointer-events-none opacity-85 rotate-[-12deg] z-10">
+<div class="w-20 h-20 rounded-full border-2 border-dashed border-red-600 p-0.5 flex flex-col items-center justify-center text-center text-red-700 font-sans font-black text-[7.5px] leading-tight shadow-sm">
+<span>* MABES TNI *</span>
+<span class="text-[9px] uppercase border-y border-red-500 py-0.5 my-0.5 tracking-wider font-extrabold">TERCATAT</span>
+<span>SLOG TNI</span>
+</div>
+</div>
+<!-- Cap Stempel KILAT / RAHASIA -->
+<div class="flex items-center justify-between mb-3 font-sans">
+<div class="inline-flex items-center gap-1 border-2 border-red-600 px-2.5 py-0.5 text-red-700 font-black text-[11px] tracking-widest uppercase rotate-[-2deg] bg-red-50/50">
+<span class="material-symbols-outlined text-[13px]">bolt</span> KILAT / RAHASIA
+                  </div>
+<div class="text-right text-[9px] text-slate-500 font-mono">
+                    Lembar 1 dari 2
+                  </div>
+</div>
+<!-- Bounding Box Hijau: NOMOR SURAT, TGL, & PERIHAL (Pasti) -->
+<div class="relative border-2 border-emerald-500 bg-emerald-500/5 p-2 rounded-xs mb-3 font-sans text-[11px] space-y-1">
+<span class="absolute -top-2.5 right-1 px-1.5 py-0.2 bg-emerald-600 text-white font-bold text-[8px] rounded uppercase tracking-wider">
+                    NOMOR &amp; TGL: 99.8%
+                  </span>
+<div class="grid grid-cols-12 gap-1">
+<span class="col-span-3 font-semibold text-slate-700">Nomor</span>
+<span class="col-span-9 font-mono font-bold text-slate-900">: B/1429/II/2025/LOG</span>
+</div>
+<div class="grid grid-cols-12 gap-1">
+<span class="col-span-3 font-semibold text-slate-700">Klasifikasi</span>
+<span class="col-span-9 font-bold text-red-700">: Kilat / Rahasia</span>
+</div>
+<div class="grid grid-cols-12 gap-1">
+<span class="col-span-3 font-semibold text-slate-700">Lampiran</span>
+<span class="col-span-9">: 1 (satu) Berkas Rincian Matlog</span>
+</div>
+<div class="grid grid-cols-12 gap-1">
+<span class="col-span-3 font-semibold text-slate-700">Perihal</span>
+<span class="col-span-9 font-semibold text-slate-900 leading-snug">
+                      : Distribusi Amunisi Kaliber Khusus TW I TA 2025 Wilayah Operasi Perbatasan RI-PNG
+                    </span>
+</div>
+</div>
+<!-- Bagian Narasi Surat -->
+<div class="font-sans text-[10.5px] text-slate-700 leading-relaxed space-y-1.5 mb-3 border-b border-slate-200 pb-2">
+<p>Kepada Yth. <strong>Panglima Komando Logistik</strong></p>
+<p class="indent-4">1. Dasar Keputusan Panglima TNI Nomor Kep/104/I/2025 perihal Rencana Pengamanan Daerah Operasi Khusus.</p>
+<p class="indent-4">2. Sehubungan dasar di atas, mohon kesiapan alokasi dan pergeseran munisi kaliber 7.62mm &amp; 5.56mm link untuk satgas perbatasan transit Biak sebelum H-3 pergeseran materiel.</p>
+</div>
+<!-- BOUNDING BOX KUNING / ORANYE BERKEDIP: TULISAN TANGAN DISPOSISI & PARAF (PERLU PEMERIKSAAN) -->
+<div class="relative border-2 border-amber-500 bg-amber-500/10 p-2.5 rounded-xs animate-pulse-subtle">
+<span class="absolute -top-3 left-2 px-2 py-0.5 bg-amber-500 text-slate-950 font-sans font-black text-[9px] rounded uppercase tracking-wider flex items-center gap-1 shadow">
+<span class="material-symbols-outlined text-[12px]">warning</span> Perlu Pemeriksaan Manual: Tulisan tangan disposisi &amp; paraf
+                  </span>
+<div class="font-mono text-[10px] text-slate-900 bg-white/70 p-2 rounded border border-amber-300 space-y-1">
+<div class="flex items-center justify-between text-[9px] font-sans font-bold text-amber-900 border-b border-amber-200 pb-0.5">
+<span>Coretan Disposisi Tinta Biru Basah</span>
+<span class="text-amber-800">Keyakinan AI: 84.2%</span>
+</div>
+<p class="italic font-serif text-[11px] text-blue-900">
+                      ✍️ <strong>Panglima:</strong> "Aksi/TDL, Laporkan! Selesaikan sebelum 5 Maret 2025." [Paraf basah]
+                    </p>
+<p class="italic font-serif text-[11px] text-blue-900">
+                      ✍️ <strong>Aslog:</strong> "ssi disposisi pang tni, Paban IV koordinasikan dgn Bekpal." [Paraf]
+                    </p>
+<p class="italic font-serif text-[10.5px] text-slate-800">
+                      ✍️ <strong>Waaslog &amp; Paban IV:</strong> "koordinasi, siapkan &amp; UMP/pedomani."
+                    </p>
+</div>
+</div>
+<!-- Cap Stempel Biru Satuan Penerima Bawah -->
+<div class="mt-3 pt-1 flex items-center justify-between text-[9px] text-slate-600 font-sans">
+<span>Diterima Sentral Posko Minlog: 28 Feb 2025 / 08:30 WIB</span>
+<span class="font-mono text-emerald-800 font-bold">SHA-256: e8b9...f4a1</span>
+</div>
+</div>
+</div>
+<!-- Footer Preview Scan Info -->
+<div class="flex items-center justify-between pt-2 border-t border-slate-700/80 text-xs text-slate-400 shrink-0">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span>Berkas: <code class="font-mono text-slate-200">SCAN_B1429_SLOG_TNI.PDF</code> (2.4 MB)</span>
+</div>
+<span class="text-slate-400">Resolusi Pemindai: <strong>400 DPI Kualitas Arsip</strong></span>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- SISI KANAN: FORMULIR DRAF HASIL EKSTRAKSI OCR -->
+<!-- ========================================== -->
+<div class="lg:col-span-6 p-4 sm:p-5 flex flex-col justify-between bg-surface-container-lowest overflow-y-auto">
+<div class="space-y-4">
+<!-- Header Form Draf -->
+<div class="flex items-center justify-between pb-2 border-b border-surface-container-high">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-sm">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-[16px] text-on-surface font-bold leading-tight">Formulir Draf Hasil Ekstraksi OCR</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Verifikasi akurasi data otomatis sebelum disimpan resmi ke basis data dinas.</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container text-on-surface border border-outline-variant">
+                  SIMONAS AUTO-POPULATED
+                </span>
+</div>
+<!-- Baris Input 1: No Agenda & No Surat Dinas -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block mb-1">
+                    No. Agenda (Auto-Generated)
+                  </label>
+<div class="relative">
+<input class="w-full px-3 py-2 bg-surface-container-high/60 rounded border border-surface-container-high text-on-surface font-mono font-bold text-sm cursor-not-allowed" readonly="" type="text" value="AG-SM/2025/00144"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-on-surface-variant text-[18px]">auto_awesome</span>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block">
+                      No. Surat Dinas
+                    </label>
+<span class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300">
+                      Akurasi 99.8%
+                    </span>
+</div>
+<div class="relative">
+<input class="w-full px-3 py-2 bg-emerald-50/50 rounded border border-emerald-400 text-on-surface font-mono font-bold text-sm focus:ring-1 focus:ring-primary-container outline-none" type="text" value="B/1429/II/2025/LOG"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-emerald-600 text-[18px]">verified</span>
+</div>
+</div>
+</div>
+<!-- Baris Input 2: Tanggal Surat & Tanggal Terima -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block mb-1">
+                    Tanggal Surat
+                  </label>
+<input class="w-full px-3 py-1.5 bg-surface-container-low rounded border border-surface-container-high text-on-surface font-body-sm text-sm outline-none" type="date" value="2025-02-27"/>
+</div>
+<div>
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block mb-1">
+                    Tanggal &amp; Waktu Diterima
+                  </label>
+<input class="w-full px-3 py-1.5 bg-surface-container-low rounded border border-surface-container-high text-on-surface font-body-sm text-sm outline-none" type="text" value="28 Feb 2025 (08:30 WIB)"/>
+</div>
+</div>
+<!-- Baris Input 3: Asal Surat & Klasifikasi Badge -->
+<div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+<div class="sm:col-span-7">
+<div class="flex items-center justify-between mb-1">
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block">
+                      Asal / Instansi Pengirim
+                    </label>
+<span class="text-[10px] font-bold text-secondary bg-surface-container-high px-1.5 py-0.2 rounded">Terdeteksi</span>
+</div>
+<input class="w-full px-3 py-1.5 bg-surface-container-lowest rounded border border-surface-container-high text-on-surface font-body-sm text-sm font-semibold outline-none" type="text" value="Mabes TNI / Slog TNI"/>
+</div>
+<div class="sm:col-span-5">
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block mb-1">
+                    Klasifikasi Dokumen
+                  </label>
+<div class="flex items-center gap-2 pt-0.5">
+<span class="px-2.5 py-1 rounded bg-red-600 text-white font-bold text-[11px] tracking-wider uppercase shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">bolt</span> KILAT
+                    </span>
+<span class="px-2.5 py-1 rounded bg-primary-container text-on-primary font-bold text-[11px] tracking-wider uppercase shadow-sm">
+                      RAHASIA
+                    </span>
+</div>
+</div>
+</div>
+<!-- Perihal & Ringkasan OCR -->
+<div class="space-y-2">
+<div>
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block mb-1">
+                    Perihal Dokumen Resmi
+                  </label>
+<input class="w-full px-3 py-1.5 bg-surface-container-lowest rounded border border-surface-container-high text-on-surface font-body-sm text-sm font-medium outline-none" type="text" value="Distribusi Amunisi Kaliber Khusus TW I TA 2025 Wilayah Operasi Perbatasan RI-PNG"/>
+</div>
+<div>
+<label class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block mb-1">
+                    Ringkasan Ekstraksi Dokumen (OCR Summary)
+                  </label>
+<textarea class="w-full px-3 py-1.5 bg-surface-container-low rounded border border-surface-container-high text-on-surface font-body-sm text-xs leading-relaxed outline-none focus:bg-white" rows="2">Permohonan alokasi dan pengiriman munisi kaliber 7.62mm dan 5.56mm link untuk kesiapan satgas ops perbatasan. Pangkalan transit Lanud Manuhua Biak disiapkan maksimal H-3.</textarea>
+</div>
+</div>
+<!-- HASIL EKSTRAKSI DISPOSISI 4 PEJABAT (LENGKAP CATATAN DAN CENTANG RESMI) -->
+<div class="p-3 bg-surface-container-low/70 rounded-xl border border-surface-container-high space-y-2.5">
+<div class="flex items-center justify-between border-b border-surface-container-high pb-1.5">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary-container text-[18px]">draw</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider font-bold text-primary-container">
+                      Hasil Ekstraksi Disposisi 4 Pejabat Kedinasan
+                    </span>
+</div>
+<span class="text-[10px] text-amber-900 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded font-medium">
+                    1 Butir Perlu Verifikasi
+                  </span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+<!-- Pejabat 1: Panglima -->
+<div class="p-2 bg-white rounded-lg border border-surface-container-high shadow-xs">
+<div class="flex items-center justify-between font-bold text-slate-800 mb-1">
+<span>1. Panglima Komando</span>
+<span class="text-[10px] text-emerald-600 flex items-center"><span class="material-symbols-outlined text-[12px]">check</span> Akurat 96%</span>
+</div>
+<div class="flex flex-wrap gap-1 mb-1">
+<span class="px-1.5 py-0.5 rounded bg-primary-container text-on-primary font-bold text-[10px]">[v] Aksi/TDL</span>
+<span class="px-1.5 py-0.5 rounded bg-primary-container text-on-primary font-bold text-[10px]">[v] Laporkan</span>
+</div>
+<div class="text-[11px] text-slate-600 italic bg-slate-50 p-1 rounded border border-slate-200">
+                      Catatan: "Selesaikan sebelum 5 Maret 2025"
+                    </div>
+</div>
+<!-- Pejabat 2: Aslog -->
+<div class="p-2 bg-white rounded-lg border border-surface-container-high shadow-xs">
+<div class="flex items-center justify-between font-bold text-slate-800 mb-1">
+<span>2. Aslog</span>
+<span class="text-[10px] text-emerald-600 flex items-center"><span class="material-symbols-outlined text-[12px]">check</span> Akurat 94%</span>
+</div>
+<div class="flex flex-wrap gap-1 mb-1">
+<span class="px-1.5 py-0.5 rounded bg-primary-container text-on-primary font-bold text-[10px]">[v] ssi disposisi pang tni</span>
+</div>
+<div class="text-[11px] text-slate-600 italic bg-slate-50 p-1 rounded border border-slate-200">
+                      Catatan: "Paban IV koordinasikan dgn Bekpal"
+                    </div>
+</div>
+<!-- Pejabat 3: Waaslog -->
+<div class="p-2 bg-white rounded-lg border border-amber-300 shadow-xs bg-amber-50/20">
+<div class="flex items-center justify-between font-bold text-slate-800 mb-1">
+<span>3. Waaslog</span>
+<span class="text-[10px] text-amber-700 font-bold">Verifikasi Manual</span>
+</div>
+<div class="flex flex-wrap gap-1 mb-1">
+<span class="px-1.5 py-0.5 rounded bg-primary-container text-on-primary font-bold text-[10px]">[v] koordinasi</span>
+</div>
+<div class="text-[10px] text-slate-500 italic">
+                      Catatan: Tidak ada catatan khusus tambahan.
+                    </div>
+</div>
+<!-- Pejabat 4: Paban IV -->
+<div class="p-2 bg-white rounded-lg border border-surface-container-high shadow-xs">
+<div class="flex items-center justify-between font-bold text-slate-800 mb-1">
+<span>4. Paban IV / Minlog</span>
+<span class="text-[10px] text-emerald-600 flex items-center"><span class="material-symbols-outlined text-[12px]">check</span> Akurat 92%</span>
+</div>
+<div class="flex flex-wrap gap-1 mb-1">
+<span class="px-1.5 py-0.5 rounded bg-primary-container text-on-primary font-bold text-[10px]">[v] siapkan</span>
+<span class="px-1.5 py-0.5 rounded bg-primary-container text-on-primary font-bold text-[10px]">[v] UMP/pedomani</span>
+</div>
+<div class="text-[10px] text-slate-500 italic">
+                      Catatan: Takah berkas &amp; koordinasi kaur reg.
+                    </div>
+</div>
+</div>
+</div>
+<!-- INDIKATOR PENCEGAHAN DUPLIKASI SESUAI SPESIFIKASI -->
+<div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 flex items-start gap-2 shadow-xs">
+<span class="material-symbols-outlined text-emerald-700 text-[20px] shrink-0 mt-0.5">verified_user</span>
+<p class="font-body-sm text-[12px] leading-snug">
+<strong>✓ Pemeriksaan SIMONAS_DB:</strong> Nomor <code class="font-mono font-bold bg-white px-1.5 py-0.5 rounded text-emerald-800 border border-emerald-300">B/1429/II/2025/LOG</code> belum pernah terdaftar. Aman disimpan.
+                </p>
+</div>
+</div>
+<!-- TOMBOL AKSI MODAL OCR -->
+<div class="pt-4 mt-3 border-t border-surface-container-high flex flex-wrap items-center justify-between gap-2 shrink-0">
+<div class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-[16px] text-secondary">cloud_done</span>
+<span>Auto-Mirror Google Drive Ready</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3.5 py-2 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold transition-colors" type="button">
+                  Batal / Reset
+                </button>
+<button class="px-3.5 py-2 rounded bg-surface-container-highest hover:bg-surface-container text-primary-container font-label-md text-label-md font-bold transition-colors flex items-center gap-1" onclick="switchModalView('print')" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Lihat Lembar Disposisi</span>
+</button>
+<button class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-white font-label-md text-label-md font-semibold transition-colors" type="button">
+                  Koreksi Manual
+                </button>
+<button class="px-5 py-2 rounded bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-bold transition-all shadow-md flex items-center gap-1.5" onclick="alert('Data Surat Berhasil Disimpan ke SIMONAS_DB dan Google Drive Militer!')" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Simpan ke SIMONAS_DB &amp; Drive</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- MODAL 2: PRATINJAU CETAK LEMBAR DISPOSISI FISIK STANDAR MILITER -->
+<!-- ========================================================================= -->
+<section class="hidden flex-col flex-1 divide-y divide-surface-container-high bg-slate-100 transition-all" id="view-print-modal">
+<!-- Header Bar Pratinjau Disposisi -->
+<div class="bg-surface-container-low px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-surface-container-high">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[22px]">print</span>
+<div>
+<span class="font-headline-sm text-sm font-bold text-on-surface">Pratinjau Cetak Lembar Disposisi Kedinasan Militer</span>
+<span class="text-xs text-on-surface-variant block">Format Standar Tata Naskah Dinas Komando Logistik TNI • Siap Cetak A4 / PDF Digital</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded bg-primary-container text-white font-mono text-xs font-bold">Kertas: Standar A4 (210 x 297 mm)</span>
+<button class="px-3 py-1.5 bg-surface-container-highest hover:bg-surface-container text-primary-container rounded font-label-md text-xs font-bold flex items-center gap-1" onclick="switchModalView('ocr')" type="button">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span>Kembali ke OCR</span>
+</button>
+</div>
+</div>
+<!-- AREA DOKUMEN CETAK LEMBAR DISPOSISI (A4 MILSPEC FORMAT) -->
+<div class="flex-1 p-4 md:p-6 overflow-y-auto flex justify-center bg-slate-200/80">
+<div class="w-full max-w-4xl bg-white text-slate-900 shadow-2xl p-6 sm:p-8 rounded-sm border border-slate-300 font-sans text-xs flex flex-col justify-between">
+<div>
+<!-- KOP RESMI SURAT MILITER -->
+<div class="border-b-2 border-black pb-3 mb-3 text-center relative">
+<div class="text-left absolute left-0 top-0">
+<p class="font-bold text-[11px] leading-tight">TENTARA NASIONAL INDONESIA</p>
+<p class="font-bold text-[11px] leading-tight">MARKAS BESAR</p>
+<p class="font-bold text-[11px] leading-tight tracking-wider">KOMANDO LOGISTIK</p>
+</div>
+<div class="inline-block pt-1">
+<h2 class="font-headline-sm text-[20px] font-extrabold tracking-wider uppercase">LEMBAR DISPOSISI</h2>
+<p class="text-[12px] font-bold tracking-widest text-slate-700">KARTU KENDALI SURAT</p>
+</div>
+<div class="absolute right-0 top-0 text-right">
+<span class="px-2 py-0.5 border border-red-700 text-red-700 font-mono font-black text-[11px] tracking-wider uppercase inline-block">
+                    KILAT / RAHASIA
+                  </span>
+<p class="text-[10px] text-slate-600 font-mono mt-0.5">Form Kodiklat-Log/02-Rev</p>
+</div>
+</div>
+<!-- TABEL INFORMASI METADATA SURAT (KISI-KISI STANDAR) -->
+<div class="border-2 border-black divide-y-2 divide-black text-[11px] mb-3">
+<div class="grid grid-cols-12 divide-x-2 divide-black bg-slate-50">
+<div class="col-span-6 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Nomor Agenda Kedinasan:</span>
+<span class="font-mono font-bold text-[14px] text-slate-900">AG-SM/2025/00144</span>
+</div>
+<div class="col-span-3 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Tingkat Keamanan:</span>
+<span class="font-bold text-red-700 text-[12px]">Rahasia (R)</span>
+</div>
+<div class="col-span-3 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Tgl Penerimaan:</span>
+<span class="font-bold">28 Feb 2025 (08:30 WIB)</span>
+</div>
+</div>
+<div class="grid grid-cols-12 divide-x-2 divide-black">
+<div class="col-span-8 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Nomor Surat Dinas:</span>
+<span class="font-mono font-bold text-[13px]">B/1429/II/2025/LOG</span>
+</div>
+<div class="col-span-4 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Tanggal Surat:</span>
+<span class="font-medium text-[12px]">27 Februari 2025</span>
+</div>
+</div>
+<div class="grid grid-cols-12 divide-x-2 divide-black">
+<div class="col-span-12 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Asal Surat / Instansi Pengirim:</span>
+<span class="font-bold text-[13px]">Mabes TNI / Staf Logistik TNI (Slog TNI)</span>
+</div>
+</div>
+<div class="grid grid-cols-12 divide-x-2 divide-black">
+<div class="col-span-12 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Perihal Surat:</span>
+<p class="font-bold leading-snug text-[12px]">
+                      Distribusi Amunisi Kaliber Khusus Triwulan I TA 2025 Wilayah Operasi Perbatasan RI-PNG
+                    </p>
+</div>
+</div>
+<div class="grid grid-cols-12 divide-x-2 divide-black bg-slate-50/70">
+<div class="col-span-12 p-2">
+<span class="text-[9px] uppercase font-bold text-slate-500 block">Ringkasan Surat:</span>
+<p class="text-[11px] text-slate-700 leading-relaxed">
+                      Permohonan alokasi dan pengiriman munisi kaliber 7.62mm dan 5.56mm link untuk kesiapan satgas ops perbatasan. Pangkalan transit Lanud Manuhua Biak disiapkan maksimal H-3.
+                    </p>
+</div>
+</div>
+</div>
+<!-- ============================================================ -->
+<!-- TABEL 4 KOLOM DISPOSISI PEJABAT LENGKAP 19 ISTILAH RESMI SATUAN -->
+<!-- ============================================================ -->
+<div class="border-2 border-black mb-3">
+<div class="grid grid-cols-4 divide-x-2 divide-black border-b-2 border-black bg-slate-100 text-center font-bold text-[11px] uppercase tracking-wide">
+<div class="py-1.5 px-1">I. DISPOSISI PANGLIMA</div>
+<div class="py-1.5 px-1">II. DISPOSISI ASLOG</div>
+<div class="py-1.5 px-1">III. DISPOSISI WAASLOG</div>
+<div class="py-1.5 px-1">IV. DISPOSISI PABAN IV</div>
+</div>
+<!-- 19 Checklist Items Grid 4 Pejabat -->
+<div class="grid grid-cols-4 divide-x-2 divide-black text-[10px] leading-tight font-mono">
+<!-- Kolom 1: PANGLIMA -->
+<div class="p-2 space-y-1">
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ACC</span></div>
+<div class="flex items-center gap-1 font-bold text-blue-900 bg-blue-50 px-0.5"><span class="w-3 text-red-600 font-extrabold">[v]</span> <span>Aksi/TDL</span></div>
+<div class="flex items-center gap-1 font-bold text-blue-900 bg-blue-50 px-0.5"><span class="w-3 text-red-600 font-extrabold">[v]</span> <span>Laporkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>siapkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>minitor/ikuti perkemb.</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>sbg bahan/pelajari</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>agendakan/acarakan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>diskusikan/rapatkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ssi diposisi pang tni</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ssi disposisi Kasau</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>UDK</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>UMP/pedomani</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>teruskan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>koordinasi</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>record/catat</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>takahkan/arsipkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>aksi wakili/hadir</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>saran tanggapan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>catatan tambahan</span></div>
+</div>
+<!-- Kolom 2: ASLOG -->
+<div class="p-2 space-y-1">
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ACC</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>Aksi/TDL</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>Laporkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>siapkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>minitor/ikuti perkemb.</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>sbg bahan/pelajari</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>agendakan/acarakan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>diskusikan/rapatkan</span></div>
+<div class="flex items-center gap-1 font-bold text-blue-900 bg-blue-50 px-0.5"><span class="w-3 text-red-600 font-extrabold">[v]</span> <span>ssi diposisi pang tni</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ssi disposisi Kasau</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>UDK</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>UMP/pedomani</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>teruskan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>koordinasi</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>record/catat</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>takahkan/arsipkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>aksi wakili/hadir</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>saran tanggapan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>catatan tambahan</span></div>
+</div>
+<!-- Kolom 3: WAASLOG -->
+<div class="p-2 space-y-1">
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ACC</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>Aksi/TDL</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>Laporkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>siapkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>minitor/ikuti perkemb.</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>sbg bahan/pelajari</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>agendakan/acarakan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>diskusikan/rapatkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ssi diposisi pang tni</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ssi disposisi Kasau</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>UDK</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>UMP/pedomani</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>teruskan</span></div>
+<div class="flex items-center gap-1 font-bold text-blue-900 bg-blue-50 px-0.5"><span class="w-3 text-red-600 font-extrabold">[v]</span> <span>koordinasi</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>record/catat</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>takahkan/arsipkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>aksi wakili/hadir</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>saran tanggapan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>catatan tambahan</span></div>
+</div>
+<!-- Kolom 4: PABAN IV -->
+<div class="p-2 space-y-1">
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ACC</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>Aksi/TDL</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>Laporkan</span></div>
+<div class="flex items-center gap-1 font-bold text-blue-900 bg-blue-50 px-0.5"><span class="w-3 text-red-600 font-extrabold">[v]</span> <span>siapkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>minitor/ikuti perkemb.</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>sbg bahan/pelajari</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>agendakan/acarakan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>diskusikan/rapatkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ssi diposisi pang tni</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>ssi disposisi Kasau</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>UDK</span></div>
+<div class="flex items-center gap-1 font-bold text-blue-900 bg-blue-50 px-0.5"><span class="w-3 text-red-600 font-extrabold">[v]</span> <span>UMP/pedomani</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>teruskan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>koordinasi</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>record/catat</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>takahkan/arsipkan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>aksi wakili/hadir</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>saran tanggapan</span></div>
+<div class="flex items-center gap-1"><span class="w-3">[ ]</span> <span>catatan tambahan</span></div>
+</div>
+</div>
+<!-- Bagian Catatan Khusus & Kolom Tanda Tangan / Paraf Pejabat -->
+<div class="grid grid-cols-4 divide-x-2 divide-black border-t-2 border-black font-sans text-[10px]">
+<div class="p-2 flex flex-col justify-between h-28 bg-slate-50/50">
+<div>
+<span class="font-bold text-[9px] uppercase text-slate-600 block">Catatan Panglima:</span>
+<p class="italic text-blue-950 font-semibold leading-tight mt-0.5">"Selesaikan sebelum 5 Maret 2025."</p>
+</div>
+<div class="pt-2 border-t border-dashed border-slate-400 text-center">
+<span class="block text-[8px] uppercase text-slate-500">Paraf / Tanda Tangan:</span>
+<span class="font-serif italic font-bold text-blue-900 text-[11px]">[Telah Diparaf]</span>
+</div>
+</div>
+<div class="p-2 flex flex-col justify-between h-28 bg-slate-50/50">
+<div>
+<span class="font-bold text-[9px] uppercase text-slate-600 block">Catatan Aslog:</span>
+<p class="italic text-blue-950 font-semibold leading-tight mt-0.5">"Paban IV koordinasikan dgn Bekpal."</p>
+</div>
+<div class="pt-2 border-t border-dashed border-slate-400 text-center">
+<span class="block text-[8px] uppercase text-slate-500">Paraf / Tanda Tangan:</span>
+<span class="font-serif italic font-bold text-blue-900 text-[11px]">[Telah Diparaf]</span>
+</div>
+</div>
+<div class="p-2 flex flex-col justify-between h-28 bg-slate-50/50">
+<div>
+<span class="font-bold text-[9px] uppercase text-slate-600 block">Catatan Waaslog:</span>
+<p class="italic text-slate-500 leading-tight mt-0.5">- Sesuai arahan -</p>
+</div>
+<div class="pt-2 border-t border-dashed border-slate-400 text-center">
+<span class="block text-[8px] uppercase text-slate-500">Paraf / Tanda Tangan:</span>
+<span class="font-serif italic font-bold text-blue-900 text-[11px]">[Telah Diparaf]</span>
+</div>
+</div>
+<div class="p-2 flex flex-col justify-between h-28 bg-slate-50/50">
+<div>
+<span class="font-bold text-[9px] uppercase text-slate-600 block">Catatan Paban IV:</span>
+<p class="italic text-blue-950 font-semibold leading-tight mt-0.5">"Takah berkas &amp; jadwalkan pergeseran."</p>
+</div>
+<div class="pt-2 border-t border-dashed border-slate-400 text-center">
+<span class="block text-[8px] uppercase text-slate-500">Paraf / Tanda Tangan:</span>
+<span class="font-serif italic font-bold text-blue-900 text-[11px]">[Telah Diparaf]</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Autentikasi Dokumen Fisik -->
+<div class="pt-2 border-t border-slate-400 flex items-center justify-between text-[9px] text-slate-500 font-mono">
+<span>Sistem Monitoring Naskah Dinas (SIMONAS) Komando Logistik TNI</span>
+<span>Petugas Registrasi: Kol. Kav. Hartono (Kaur Reg. Minlog)</span>
+<span>Dokumen Sah &amp; Terarsip Digital</span>
+</div>
+</div>
+</div>
+<!-- TOMBOL AKSI CETAK LEMBAR DISPOSISI -->
+<div class="bg-surface-container-low px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-t border-surface-container-high shrink-0">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-[18px] text-emerald-600">task_alt</span>
+<span>Standar Naskah Dinas Terverifikasi Mabes TNI Kodiklat/2025</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold transition-colors flex items-center gap-1.5" onclick="alert('Mengekspor ke format dokumen DOCX / ODT...')" type="button">
+<span class="material-symbols-outlined text-[18px]">description</span>
+<span>Ekspor ke Dokumen</span>
+</button>
+<button class="px-5 py-2 rounded bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-bold transition-all shadow-md flex items-center gap-1.5" onclick="window.print()" type="button">
+<span class="material-symbols-outlined text-[18px]">print</span>
+<span>Cetak Lembar Disposisi (PDF / Print)</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- SCRIPT SWITCHER VIEW MODAL SECARA HALUS DAN RESPONSIF -->
+<script>
+    let currentZoom = 100;
+    let currentRotation = 0;
+
+    function adjustZoom(delta) {
+      currentZoom = Math.max(60, Math.min(180, currentZoom + delta));
+      const sheet = document.getElementById('document-sheet');
+      if (sheet) {
+        sheet.style.transform = `scale(${currentZoom / 100}) rotate(${currentRotation}deg)`;
+      }
+      const label = document.getElementById('zoom-text');
+      if (label) label.textContent = `${currentZoom}%`;
+    }
+
+    function rotatePreview() {
+      currentRotation = (currentRotation + 90) % 360;
+      const sheet = document.getElementById('document-sheet');
+      if (sheet) {
+        sheet.style.transform = `scale(${currentZoom / 100}) rotate(${currentRotation}deg)`;
+      }
+    }
+
+    function switchModalView(mode) {
+      const viewOcr = document.getElementById('view-ocr-modal');
+      const viewPrint = document.getElementById('view-print-modal');
+      const btnOcr = document.getElementById('tab-btn-ocr');
+      const btnPrint = document.getElementById('tab-btn-print');
+      const btnSplit = document.getElementById('tab-btn-split');
+
+      if (mode === 'ocr') {
+        viewOcr.classList.remove('hidden');
+        viewPrint.classList.add('hidden');
+        
+        btnOcr.className = "flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md font-bold transition-all bg-surface-container-highest text-primary-container shadow";
+        btnPrint.className = "flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md font-semibold text-on-primary-container hover:text-on-primary transition-all";
+        if (btnSplit) btnSplit.classList.remove('bg-surface-container-highest', 'text-primary-container');
+      } else if (mode === 'print') {
+        viewOcr.classList.add('hidden');
+        viewPrint.classList.remove('hidden');
+
+        btnPrint.className = "flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md font-bold transition-all bg-surface-container-highest text-primary-container shadow";
+        btnOcr.className = "flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md font-semibold text-on-primary-container hover:text-on-primary transition-all";
+        if (btnSplit) btnSplit.classList.remove('bg-surface-container-highest', 'text-primary-container');
+      } else if (mode === 'split') {
+        // Tampilkan keduanya sekaligus berdampingan
+        viewOcr.classList.remove('hidden');
+        viewPrint.classList.remove('hidden');
+        
+        // Sesuaikan flex container untuk split view
+        viewOcr.className = "flex flex-col flex-1 divide-y divide-surface-container-high border-b-4 border-primary/20";
+        viewPrint.className = "flex flex-col flex-1 divide-y divide-surface-container-high bg-slate-100";
+
+        if (btnSplit) btnSplit.className = "hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-lg font-label-md text-label-md font-bold bg-surface-container-highest text-primary-container shadow ml-1 border-l border-white/10 pl-3";
+      }
+    }
+  </script>
+</body></html>

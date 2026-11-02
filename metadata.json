@@ -1,0 +1,6 @@
+{
+  "name": "SIMONAS - Agenda Surat Digital & Lembar Disposisi",
+  "description": "Sistem informasi manajemen pencatatan agenda naskah dinas berkas masuk, surat keluar, warta telegram, ekstraksi OCR cerdas, cetak lembar disposisi militer A4, dan rekapitulasi analitik kedinasan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
