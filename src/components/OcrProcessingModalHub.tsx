@@ -28,7 +28,10 @@ import {
   FileUp,
   Download,
   QrCode,
-  Image as ImageIcon
+  Image as ImageIcon,
+  BookOpen,
+  Copy,
+  Check
 } from 'lucide-react';
 import { KLAUSUL_RESMI_19, LampiranItem, SuratMasuk } from '../types';
 import { DisposisiQrSection } from './DisposisiQrSection';
@@ -67,6 +70,9 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
   const [isAiScanning, setIsAiScanning] = useState<boolean>(false);
   const [ocrScanAccuracy, setOcrScanAccuracy] = useState<number>(initialSurat?.ocrAccuracy || 98.4);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [rawTextTranscription, setRawTextTranscription] = useState<string>('');
+  const [showTranscriptionOverlay, setShowTranscriptionOverlay] = useState<boolean>(false);
+  const [isCopiedTranscription, setIsCopiedTranscription] = useState<boolean>(false);
   const realFileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
@@ -194,6 +200,9 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
         if (d.klasifikasi) setKlasifikasi(d.klasifikasi);
         if (d.confidence) setOcrScanAccuracy(d.confidence);
         setMissingFields(d.missingFields || []);
+        if (d.rawTextSnippet) {
+          setRawTextTranscription(d.rawTextSnippet);
+        }
         if (d.catatanDisposisi) {
           setDisposisiPanglima((prev) => ({ ...prev, catatan: d.catatanDisposisi || prev.catatan }));
         }
@@ -486,6 +495,22 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
                       <Upload className="w-3.5 h-3.5" />
                       <span>{uploadedRealFile ? 'Ganti File' : 'Unggah PDF / Foto'}</span>
                     </button>
+
+                    {rawTextTranscription && (
+                      <button
+                        onClick={() => setShowTranscriptionOverlay(!showTranscriptionOverlay)}
+                        type="button"
+                        className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+                          showTranscriptionOverlay
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                        }`}
+                        title="Tampilkan teks hasil pembacaan OCR"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-emerald-300" />
+                        <span>Teks OCR</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -502,6 +527,55 @@ export const OcrProcessingModalHub: React.FC<OcrProcessingModalHubProps> = ({
                       <p className="text-xs text-slate-300 max-w-md">
                         Mengekstraksi nomor surat, tanggal, asal pengirim, perihal, ringkasan, dan catatan disposisi secara otomatis.
                       </p>
+                    </div>
+                  )}
+
+                  {/* OCR Transcribed Text Overlay */}
+                  {showTranscriptionOverlay && rawTextTranscription && (
+                    <div className="absolute inset-2 bg-slate-900/95 backdrop-blur-md rounded-lg p-4 z-20 flex flex-col border border-emerald-500/50 shadow-2xl">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-700">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs font-bold text-emerald-300">
+                            Transkripsi Teks Lengkap (Hasil Baca OCR AI)
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(rawTextTranscription);
+                              setIsCopiedTranscription(true);
+                              setTimeout(() => setIsCopiedTranscription(false), 2000);
+                            }}
+                            className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs flex items-center gap-1 border border-slate-600"
+                          >
+                            {isCopiedTranscription ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-400" />
+                                <span className="text-emerald-400">Tersalin</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" />
+                                <span>Salin Teks</span>
+                              </>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowTranscriptionOverlay(false)}
+                            className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex-1 overflow-auto mt-2">
+                        <pre className="text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed select-text p-2 bg-slate-950/60 rounded border border-slate-800">
+                          {rawTextTranscription}
+                        </pre>
+                      </div>
                     </div>
                   )}
 

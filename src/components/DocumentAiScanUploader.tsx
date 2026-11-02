@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useRef, useId } from 'react';
 import { 
   FileUp, 
@@ -15,7 +10,18 @@ import {
   Eye, 
   X, 
   ShieldCheck,
-  Edit3
+  Edit3,
+  BookOpen,
+  Copy,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  FileCheck2,
+  HelpCircle,
+  Lightbulb
 } from 'lucide-react';
 import { 
   analyzeDocumentFile, 
@@ -45,6 +51,15 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
   const [extractedData, setExtractedData] = useState<AnalyzedDocumentData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  
+  // Inspection & Reading Details drawer
+  const [isInspectionOpen, setIsInspectionOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<'transcription' | 'intelligence' | 'metadata'>('transcription');
+  const [isCopied, setIsCopied] = useState(false);
+  
+  // Modal Preview Zoom & Rotate
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [rotation, setRotation] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputId = useId();
@@ -59,7 +74,7 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
       'image/webp'
     ];
     if (!validMimes.includes(file.type) && !file.name.match(/\.(pdf|jpe?g|png|webp)$/i)) {
-      setErrorMessage('Format berkas tidak didukung. Harap unggah berkas PDF atau Foto (JPG, PNG).');
+      setErrorMessage('Format berkas tidak didukung. Harap unggah berkas PDF atau Foto (JPG, PNG, WEBP).');
       return;
     }
 
@@ -67,6 +82,9 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
     setErrorMessage(null);
     setIsAnalyzing(true);
     setExtractedData(null);
+    setIsInspectionOpen(true);
+    setZoomLevel(100);
+    setRotation(0);
 
     // Create local preview object URL
     if (previewUrl) {
@@ -130,6 +148,20 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
     }
   };
 
+  const handleCopyTranscription = () => {
+    if (extractedData?.rawTextSnippet) {
+      navigator.clipboard.writeText(extractedData.rawTextSnippet);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  const handleReapplyForm = () => {
+    if (extractedData && uploadedFile) {
+      onExtracted(extractedData, uploadedFile, previewUrl || undefined);
+    }
+  };
+
   const docLabel = 
     documentType === 'surat_masuk' 
       ? 'Surat Masuk' 
@@ -173,7 +205,7 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-600 mt-0.5">
-                {description || 'Unggah scan naskah dinas (PDF atau Foto JPG/PNG). Sistem otomatis menganalisa dan mengisi formulir. Data yang belum terbaca dapat dilengkapi secara manual.'}
+                {description || 'Unggah scan naskah dinas (PDF atau Foto JPG/PNG). Sistem otomatis membaca dan menganalisa teks dokumen, lalu mengisi formulir. Kolom yang kosong tetap dapat dilengkapi secara manual.'}
               </p>
             </div>
           </div>
@@ -192,7 +224,7 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
 
       {/* ANALYZING STATE */}
       {isAnalyzing && (
-        <div className="py-6 flex flex-col items-center justify-center text-center space-y-3">
+        <div className="py-7 flex flex-col items-center justify-center text-center space-y-3">
           <div className="relative">
             <div className="w-14 h-14 rounded-2xl bg-[#0f1e36] text-white flex items-center justify-center shadow-lg">
               <RefreshCw className="w-7 h-7 text-emerald-400 animate-spin" />
@@ -204,10 +236,10 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
 
           <div>
             <h5 className="font-heading font-bold text-sm text-[#0f1e36]">
-              Sedang Menganalisis Berkas {uploadedFile?.name}...
+              Sedang Membaca & Menganalisis Dokumen {uploadedFile?.name}...
             </h5>
-            <p className="text-xs text-slate-500 mt-1">
-              Membaca teks, kop surat, nomor naskah, tanggal, perihal, dan klasifikasi militer secara otomatis.
+            <p className="text-xs text-slate-500 mt-1 max-w-lg">
+              Melakukan pemindaian OCR mendalam, membaca KOP, nomor dinas, butir-butir teks, instansi pengirim, dan membuat intisari intelijen administrasi.
             </p>
           </div>
         </div>
@@ -219,7 +251,7 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-300">
-                {uploadedFile.type.includes('pdf') ? (
+                {uploadedFile.name.toLowerCase().endsWith('.pdf') ? (
                   <FileText className="w-5 h-5" />
                 ) : (
                   <ImageIcon className="w-5 h-5" />
@@ -242,6 +274,17 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsInspectionOpen(!isInspectionOpen)}
+                className="px-3 py-1.5 rounded-lg bg-[#0f1e36] hover:bg-[#1a3158] text-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors"
+                title="Buka atau tutup rincian hasil pembacaan naskah dan teks OCR"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Hasil Baca Dokumen</span>
+                {isInspectionOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+
               {previewUrl && (
                 <button
                   type="button"
@@ -271,11 +314,11 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
               <div className="flex items-center gap-2 font-bold text-amber-800">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  Perhatian: Terdapat {extractedData.missingFields.length} data yang belum lengkap / belum terbaca dari berkas.
+                  Opsi Pengisian Manual Aktif: Terdapat {extractedData.missingFields.length} bidang data yang belum lengkap / belum terbaca dari naskah.
                 </span>
               </div>
               <p className="text-[11px] text-amber-700">
-                Silakan lengkapi bidang yang kosong secara manual pada formulir di bawah ini (kolom telah ditandai):
+                Sistem tidak mendeteksi data berikut pada naskah secara pasti. Silakan klik atau ketik langsung pada formulir berlabel oranye di bawah ini:
               </p>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {extractedData.missingFields.map((field) => (
@@ -298,6 +341,199 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
               <span>Semua data kunci naskah berhasil dianalisis dan diisikan ke formulir. Silakan periksa kembali sebelum menyimpan.</span>
             </div>
           )}
+
+          {/* EXPANDABLE INSPECTION & READING DRAWER */}
+          {isInspectionOpen && extractedData && (
+            <div className="bg-white rounded-xl border border-slate-300 shadow-xs overflow-hidden mt-2 animate-in fade-in duration-200">
+              {/* Drawer Tabs */}
+              <div className="bg-slate-100 px-3 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('transcription')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                      activeTab === 'transcription'
+                        ? 'bg-[#0f1e36] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                    }`}
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Teks Transkripsi Terbaca</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('intelligence')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                      activeTab === 'intelligence'
+                        ? 'bg-[#0f1e36] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                    }`}
+                  >
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Analisis & Rekomendasi Staf</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('metadata')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                      activeTab === 'metadata'
+                        ? 'bg-[#0f1e36] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                    }`}
+                  >
+                    <FileCheck2 className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Data Formulir Terisi</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleReapplyForm}
+                    className="px-2.5 py-1 rounded bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-800 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                    title="Terapkan kembali seluruh data hasil ekstraksi ke formulir"
+                  >
+                    <RefreshCw className="w-3 h-3 text-blue-600" />
+                    <span>Terapkan Ulang ke Form</span>
+                  </button>
+
+                  {extractedData.rawTextSnippet && (
+                    <button
+                      type="button"
+                      onClick={handleCopyTranscription}
+                      className="px-2.5 py-1 rounded bg-slate-200 hover:bg-slate-300 text-slate-800 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                      title="Salin teks dokumen yang berhasil dibaca"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span className="text-emerald-700">Tersalin</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 text-slate-600" />
+                          <span>Salin Teks</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="p-3 text-xs text-slate-700 max-h-64 overflow-y-auto">
+                {activeTab === 'transcription' && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pb-1 border-b border-slate-100">
+                      <span>Transkripsi Teks Lengkap Dokumen (OCR Hasil Pembacaan Langsung):</span>
+                      <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">
+                        Tingkat Akurasi: {extractedData.confidence}%
+                      </span>
+                    </div>
+                    {extractedData.rawTextSnippet ? (
+                      <pre className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-800 font-mono text-[11px] leading-relaxed whitespace-pre-wrap select-text">
+                        {extractedData.rawTextSnippet}
+                      </pre>
+                    ) : (
+                      <div className="p-3 bg-slate-50 rounded-lg text-slate-500 italic">
+                        Teks langsung belum tersedia. Ringkasan isi: {extractedData.ringkasan || 'Tidak ada teks.'}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'intelligence' && (
+                  <div className="space-y-3">
+                    {extractedData.analisaIntelijen ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="p-2.5 rounded-lg bg-blue-50/70 border border-blue-200 space-y-1">
+                          <span className="text-[10px] font-bold text-blue-900 uppercase tracking-wider block">
+                            Intisari Naskah Dinas
+                          </span>
+                          <p className="text-[11px] text-blue-950 leading-relaxed">
+                            {extractedData.analisaIntelijen.intisari || extractedData.ringkasan}
+                          </p>
+                        </div>
+
+                        <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-200 space-y-1">
+                          <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">
+                            Tingkat Urgensi & Batas Waktu
+                          </span>
+                          <p className="text-[11px] text-amber-950 font-semibold">
+                            {extractedData.analisaIntelijen.urgensi || 'Standar Kedinasan'}
+                          </p>
+                          {extractedData.analisaIntelijen.batasWaktu && (
+                            <p className="text-[10px] text-amber-800">
+                              Target Batas Waktu: <strong>{extractedData.analisaIntelijen.batasWaktu}</strong>
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="sm:col-span-2 p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-200 space-y-1">
+                          <span className="text-[10px] font-bold text-emerald-900 uppercase tracking-wider block">
+                            Rekomendasi Aksi / Tindak Lanjut Staf
+                          </span>
+                          <p className="text-[11px] text-emerald-950 leading-relaxed">
+                            {extractedData.analisaIntelijen.rekomendasiAksi || 'Lakukan pengarsipan dan koordinasikan dengan satker terkait sesuai disposisi pimpinan.'}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-600 leading-relaxed">
+                        {extractedData.ringkasan}
+                      </p>
+                    )}
+
+                    {extractedData.extractedClauses && extractedData.extractedClauses.length > 0 && (
+                      <div className="pt-2 border-t border-slate-100">
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                          Butir-Butir Ketentuan Terdeteksi:
+                        </span>
+                        <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-700 pl-1">
+                          {extractedData.extractedClauses.map((clause, idx) => (
+                            <li key={idx} className="leading-snug">{clause}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'metadata' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div className="p-2 bg-slate-50 rounded border border-slate-200">
+                      <span className="text-slate-500 font-bold block">Nomor Naskah:</span>
+                      <span className="font-mono font-bold text-slate-900">{extractedData.noSurat || extractedData.noTelegram || '-'}</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded border border-slate-200">
+                      <span className="text-slate-500 font-bold block">Tanggal Surat / Kirim:</span>
+                      <span className="font-mono text-slate-900">{extractedData.tglSurat || extractedData.tglTerimaAtauKirim || '-'}</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded border border-slate-200">
+                      <span className="text-slate-500 font-bold block">Pengirim:</span>
+                      <span className="font-semibold text-slate-900">{extractedData.asalPengirim || '-'}</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded border border-slate-200">
+                      <span className="text-slate-500 font-bold block">Tujuan / Kepada:</span>
+                      <span className="font-semibold text-slate-900">{extractedData.tujuanPenerima || '-'}</span>
+                    </div>
+                    <div className="sm:col-span-2 p-2 bg-slate-50 rounded border border-slate-200">
+                      <span className="text-slate-500 font-bold block">Perihal:</span>
+                      <span className="font-semibold text-slate-900">{extractedData.perihal || '-'}</span>
+                    </div>
+                    {extractedData.catatanDisposisi && (
+                      <div className="sm:col-span-2 p-2 bg-amber-50 rounded border border-amber-200">
+                        <span className="text-amber-800 font-bold block">Catatan Disposisi / Paraf:</span>
+                        <span className="italic text-amber-950 font-serif">{extractedData.catatanDisposisi}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -318,37 +554,82 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
         </div>
       )}
 
-      {/* MODAL PREVIEW FOR UPLOADED FILE */}
+      {/* MODAL PREVIEW FOR UPLOADED FILE WITH ZOOM & ROTATE */}
       {isPreviewOpen && previewUrl && (
-        <div className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-300">
+        <div className="fixed inset-0 z-60 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+          <div className="bg-white rounded-2xl max-w-5xl w-full h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-slate-300">
+            {/* Modal Header */}
             <div className="px-4 py-3 bg-[#0f1e36] text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-2 min-w-0">
+                <FileText className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span className="font-bold text-xs truncate max-w-md">{uploadedFile?.name}</span>
+                <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 hidden sm:inline">
+                  Pratinjau Dokumen Asli
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsPreviewOpen(false)}
-                className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              {/* Controls */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 text-slate-300">
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel((z) => Math.min(200, z + 15))}
+                    className="p-1 hover:text-white hover:bg-slate-700 rounded"
+                    title="Perbesar"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[10px] font-mono px-1.5">{zoomLevel}%</span>
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel((z) => Math.max(50, z - 15))}
+                    className="p-1 hover:text-white hover:bg-slate-700 rounded"
+                    title="Perkecil"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+                  <div className="w-px h-3 bg-slate-700 mx-0.5"></div>
+                  <button
+                    type="button"
+                    onClick={() => setRotation((r) => (r + 90) % 360)}
+                    className="p-1 hover:text-white hover:bg-slate-700 rounded"
+                    title="Putar 90 derajat"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            <div className="flex-1 bg-slate-100 overflow-auto p-4 flex items-center justify-center">
-              {uploadedFile?.type.includes('pdf') ? (
+            {/* Modal Body */}
+            <div className="flex-1 bg-slate-900 overflow-auto p-4 flex items-center justify-center relative">
+              {uploadedFile?.name.toLowerCase().endsWith('.pdf') ? (
                 <iframe
                   src={previewUrl}
                   title="PDF Preview"
-                  className="w-full h-full rounded-lg border border-slate-300 shadow-sm"
+                  className="w-full h-full rounded-lg border border-slate-700 bg-white"
                 />
               ) : (
-                <img
-                  src={previewUrl}
-                  alt="Scan Preview"
-                  className="max-h-full max-w-full object-contain rounded-lg shadow-sm"
-                />
+                <div className="w-full h-full flex items-center justify-center overflow-auto p-2">
+                  <img
+                    src={previewUrl}
+                    alt="Scan Preview"
+                    style={{
+                      transform: `scale(${zoomLevel / 100}) rotate(${rotation}deg)`,
+                      transformOrigin: 'center center',
+                      transition: 'transform 0.2s ease-out'
+                    }}
+                    className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl border border-slate-700"
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -357,3 +638,4 @@ export const DocumentAiScanUploader: React.FC<DocumentAiScanUploaderProps> = ({
     </div>
   );
 };
+

@@ -59,7 +59,9 @@ export const TelegramModal: React.FC<TelegramModalProps> = ({
     if (data.tujuanPenerima) setKepada(data.tujuanPenerima);
     if (data.tembusan) setTembusan(data.tembusan);
     if (data.perihal) setPerihal(data.perihal);
-    if (data.isiBerita || data.ringkasan) setIsiBerita(data.isiBerita || data.ringkasan);
+    if (data.isiBerita || data.rawTextSnippet || data.ringkasan) {
+      setIsiBerita(data.isiBerita || data.rawTextSnippet || data.ringkasan);
+    }
     if (data.klasifikasi) setKlasifikasi((data.klasifikasi.toUpperCase() as any) || 'KILAT');
     if (data.derajat) setDerajatKeamanan((data.derajat.toUpperCase() as any) || 'RAHASIA');
     setMissingFields(data.missingFields || []);

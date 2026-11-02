@@ -25,6 +25,14 @@ export interface AnalyzedDocumentData {
   catatanDisposisi?: string;
   confidence: number;
   missingFields: string[];
+  rawTextSnippet?: string;
+  extractedClauses?: string[];
+  analisaIntelijen?: {
+    urgensi?: string;
+    intisari?: string;
+    rekomendasiAksi?: string;
+    batasWaktu?: string;
+  };
 }
 
 export interface AnalyzeDocumentResponse {
@@ -55,6 +63,23 @@ export const FIELD_LABELS_MAP: Record<string, string> = {
 };
 
 /**
+ * Infer correct MIME type from file extension if file.type is blank or generic
+ */
+export function inferMimeType(file: File): string {
+  if (file.type && file.type !== 'application/octet-stream' && file.type !== '') {
+    return file.type;
+  }
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.pdf')) return 'application/pdf';
+  if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+  if (name.endsWith('.png')) return 'image/png';
+  if (name.endsWith('.webp')) return 'image/webp';
+  if (name.endsWith('.bmp')) return 'image/bmp';
+  if (name.endsWith('.tiff') || name.endsWith('.tif')) return 'image/tiff';
+  return 'application/pdf';
+}
+
+/**
  * Convert a File object to Base64 string
  */
 export function fileToBase64(file: File): Promise<string> {
@@ -76,10 +101,11 @@ export async function analyzeDocumentFile(
   expectedType?: 'surat_masuk' | 'surat_keluar' | 'telegram'
 ): Promise<AnalyzeDocumentResponse> {
   const base64Data = await fileToBase64(file);
+  const resolvedMime = inferMimeType(file);
 
   const payload = {
     fileBase64: base64Data,
-    mimeType: file.type || 'application/pdf',
+    mimeType: resolvedMime,
     fileName: file.name,
     expectedType: expectedType || 'auto',
   };
